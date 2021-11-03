@@ -7,7 +7,7 @@ class UserRole(enum.Enum):
     FINANSIJE = 'FINANSIJE'
 
 
-class Orjentacija(enum.Enum):
+class Orientation(enum.Enum):
     ISTOK = 'ISTOK'
     ZAPAD = 'ZAPAD'
     SEVER = 'SEVER'
@@ -20,23 +20,23 @@ class Status(enum.Enum):
     PRODAT = 'PRODAT'
 
 
-class FizickoPravnoLice(enum.Enum):
+class LegalEntity(enum.Enum):
     FIZICKO ='FIZICKO'
     PRAVNO = 'PRAVNO'
 
 
-class KupacStatus(enum.Enum):
+class CostumerStatus(enum.Enum):
     POTENCIJALNI ='POTECNCIJALNI'
     REZERVISAO = 'REZERVISAO'
     KUPIO = 'KUPIO'
 
 
-class Valuta(enum.Enum):
+class Currency(enum.Enum):
     EUR = 'EUR'
     RSD = 'RSD'
 
 
-class NacinPlacanja(enum.Enum):
+class PaymentMethod(enum.Enum):
     KES = 'KES'
     KREDIT = 'KREDIT'
     MESOVITO = 'MESOVITO'
