@@ -6,7 +6,7 @@ from flask import Blueprint, request, current_app, jsonify
 from marshmallow import ValidationError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app.marsh import new_user_schema
+from app.marsh import new_user_schema, edit_user_schema
 from app.models import db, User
 
 bp = Blueprint('bp', __name__)
@@ -69,9 +69,31 @@ def add_new_user():
     new_user.password = generate_password_hash(data['password'], method='sha256')
     new_user.role = data['role']
 
-
-
     db.session.add(new_user)
     db.session.commit()
 
     return jsonify({"message": "New user created."}), 200
+
+
+@bp.route('/edit_user', methods=['POST'])
+def edit_user():
+    data = edit_user_schema.load(request.get_json())
+
+    user = User.query.filter_by(id=data['id']).first()
+    if not user:
+        return jsonify({"message": "User with that id doesnt exists."}), 400
+
+    if data['first_name']:
+        user.first_name = data['first_name']
+    if data['last_name']:
+        user.last_name = data['last_name']
+    if data['username']:
+        user.username = data['username']
+    if data['password']:
+        user.username = data['password']
+    if data['role']:
+        user.role = data['role']
+
+    db.session.commit()
+
+

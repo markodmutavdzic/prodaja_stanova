@@ -51,7 +51,7 @@ def upgrade():
     sa.Column('first_name', sa.String(length=50), nullable=False),
     sa.Column('last_name', sa.String(length=50), nullable=False),
     sa.Column('username', sa.String(length=50), nullable=False),
-    sa.Column('password', sa.String(length=50), nullable=False),
+    sa.Column('password', sa.String(length=100), nullable=False),
     sa.Column('role', sa.Enum('ADMIN', 'PRODAVAC', 'FINANSIJE', name='userrole'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
