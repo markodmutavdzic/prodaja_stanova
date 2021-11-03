@@ -6,7 +6,7 @@ from flask import Blueprint, request, current_app, jsonify
 from marshmallow import ValidationError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app.marsh import new_user_schema, edit_user_schema
+from app.marsh import new_user_schema, edit_user_schema, login_schema
 from app.models import db, User
 
 bp = Blueprint('bp', __name__)
@@ -26,7 +26,7 @@ def token_required(f):
         if not token:
             return jsonify({'message': 'Token is missing'}), 401
         try:
-            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+            data = jwt.decode(token, current_app.config.get('SECRET_KEY'), algorithms=['HS256'])
             current_user = User.query.filter_by(id=data['id']).first()
         except:
             return jsonify({'message': 'Token is invalid.'}), 401
@@ -36,14 +36,14 @@ def token_required(f):
 
 @bp.route('/login', methods=['POST'])
 def login():
-    auth = request.get_json()
+    auth = login_schema.load(request.get_json())
     user = User.query.filter_by(username=auth['username']).first()
     if not user:
         return jsonify({"message": "User with that username doesn't exist"}), 401
     if check_password_hash(user.password, auth['password']):
         token = jwt.encode(
             {'id': user.id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)},
-            current_app.config['SECRET_KEY'], algorithm='HS256')
+            current_app.config.get('SECRET_KEY'), algorithm='HS256')
         return jsonify({'token': token}), 200
 
     return jsonify({"message": "Invalid password"}), 401
@@ -58,7 +58,7 @@ def add_new_user():
 
     # data = request.get_json()
 
-    user = User.query.filter_by(username=data['username']).first()
+    user = User.query.filter_by(username=data.get('username')).first()
     if user:
         return jsonify({"message": "User with that username already exists."}), 400
 
@@ -79,21 +79,23 @@ def add_new_user():
 def edit_user():
     data = edit_user_schema.load(request.get_json())
 
-    user = User.query.filter_by(id=data['id']).first()
+    user = User.query.filter_by(id=data.get('id')).first()
     if not user:
         return jsonify({"message": "User with that id doesnt exists."}), 400
 
-    if data['first_name']:
+    if data.get('first_name'):
         user.first_name = data['first_name']
-    if data['last_name']:
+    if data.get('last_name'):
         user.last_name = data['last_name']
-    if data['username']:
+    if data.get('username'):
         user.username = data['username']
-    if data['password']:
-        user.username = data['password']
-    if data['role']:
+    if data.get('password'):
+        user.password = generate_password_hash(data['password'], method='sha256')
+    if data.get('role'):
         user.role = data['role']
 
     db.session.commit()
+
+    return jsonify({"message": "User edited."}), 200
 
 
