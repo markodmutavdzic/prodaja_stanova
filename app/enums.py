@@ -1,42 +1,42 @@
 import enum
 
 
-class UserRole(enum.Enum):
+class UserRole(str, enum.Enum):
     ADMIN = 'ADMIN'
     PRODAVAC = 'PRODAVAC'
     FINANSIJE = 'FINANSIJE'
 
 
-class Orientation(enum.Enum):
+class Orientation(str, enum.Enum):
     ISTOK = 'ISTOK'
     ZAPAD = 'ZAPAD'
     SEVER = 'SEVER'
     JUG = 'JUG'
 
 
-class Status(enum.Enum):
+class Status(str, enum.Enum):
     SLOBODAN = 'SLOBODAN'
     REZERVISAN = 'REZERVISAN'
     PRODAT = 'PRODAT'
 
 
-class LegalEntity(enum.Enum):
+class LegalEntity(str, enum.Enum):
     FIZICKO ='FIZICKO'
     PRAVNO = 'PRAVNO'
 
 
-class CostumerStatus(enum.Enum):
+class CostumerStatus(str, enum.Enum):
     POTENCIJALNI ='POTECNCIJALNI'
     REZERVISAO = 'REZERVISAO'
     KUPIO = 'KUPIO'
 
 
-class Currency(enum.Enum):
+class Currency(str, enum.Enum):
     EUR = 'EUR'
     RSD = 'RSD'
 
 
-class PaymentMethod(enum.Enum):
+class PaymentMethod(str, enum.Enum):
     KES = 'KES'
     KREDIT = 'KREDIT'
     MESOVITO = 'MESOVITO'

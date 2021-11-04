@@ -9,14 +9,14 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app import enums
 from app.marsh import new_user_schema, edit_user_schema, login_schema, edit_current_user_schema
 from app.models import db, User
+from app.serialize import users_serialize, user_serialize
 
-bp = Blueprint('bp', __name__)
+usr = Blueprint('user', __name__, url_prefix='/user')
 
 
-@bp.route('/')
+@usr.route('/')
 def hello():
-    return 'Zdravo, zdravo', 200
-
+    return 'Zdravo, user', 200
 
 def token_required(f):
     @wraps(f)
@@ -35,7 +35,7 @@ def token_required(f):
     return decorated
 
 
-@bp.route('/login', methods=['POST'])
+@usr.route('/login', methods=['POST'])
 def login():
     auth = login_schema.load(request.get_json())
     user = User.query.filter_by(username=auth.get('username')).first()
@@ -45,15 +45,14 @@ def login():
         token = jwt.encode(
             {'id': user.id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=12)},
             current_app.config.get('SECRET_KEY'), algorithm='HS256')
-        return jsonify({'token': token}), 200
-
+        user_f = user_serialize(user)
+        return jsonify({'token': token}, {'user': user_f}), 200
     return jsonify({"message": "Invalid password"}), 401
 
 
-@bp.route('/add_new_user', methods=['POST'])
+@usr.route('/add_new_user', methods=['POST'])
 @token_required
 def add_new_user(current_user):
-# def add_new_user():
     if current_user.role is not enums.UserRole.ADMIN:
         return jsonify({"message": "User must be ADMIN"}), 400
 
@@ -64,7 +63,7 @@ def add_new_user(current_user):
 
     user = User.query.filter_by(username=data.get('username')).first()
     if user:
-        return jsonify({"message": "User with that username already exists."}), 200
+        return jsonify({"message": "User with that username already exists."}), 400
 
     new_user = User()
     new_user.first_name = data.get('first_name')
@@ -79,14 +78,13 @@ def add_new_user(current_user):
     return jsonify({"message": "New user created."}), 200
 
 
-@bp.route('/edit_user', methods=['POST'])
+@usr.route('/edit_user', methods=['POST'])
 @token_required
 def edit_user(current_user):
     if current_user.role is not enums.UserRole.ADMIN:
         return jsonify({"message": "User must be ADMIN"}), 400
 
     data = edit_user_schema.load(request.get_json())
-
     user = User.query.filter_by(id=data.get('id')).first()
     if not user:
         return jsonify({"message": "User with that id doesnt exists."}), 400
@@ -96,6 +94,9 @@ def edit_user(current_user):
     if data.get('last_name'):
         user.last_name = data.get('last_name')
     if data.get('username'):
+        user = User.query.filter_by(username=data.get('username')).first()
+        if user:
+            return jsonify({"message": "User with that username already exists."}), 400
         user.username = data.get('username')
     if data.get('password'):
         user.password = generate_password_hash(data.get('password'), method='sha256')
@@ -107,11 +108,10 @@ def edit_user(current_user):
     return jsonify({"message": "User edited."}), 200
 
 
-@bp.route('/edit_current_user', methods=['POST'])
+@usr.route('/edit_current_user', methods=['POST'])
 @token_required
 def edit_current_user(current_user):
     data = edit_current_user_schema.load(request.get_json())
-
     user = current_user
 
     if data.get('first_name'):
@@ -119,6 +119,8 @@ def edit_current_user(current_user):
     if data.get('last_name'):
         user.last_name = data.get('last_name')
     if data.get('username'):
+        if user:
+            return jsonify({"message": "User with that username already exists."}), 400
         user.username = data.get('username')
     if data.get('password'):
         user.password = generate_password_hash(data.get('password'), method='sha256')
@@ -129,6 +131,17 @@ def edit_current_user(current_user):
 
     return jsonify({"message": "Current user edited."}), 200
 
+
+@usr.route('/all_users', methods=['GET'])
+@token_required
+def all_users(current_user):
+    if current_user.role is not enums.UserRole.ADMIN:
+        return jsonify({"message": "User must be ADMIN"}), 400
+
+    users = User.query.all()
+    result = users_serialize(users)
+    #password se ne vidi ali moze da se menja u user_edit
+    return jsonify({"users": result}), 200
 
 
 
