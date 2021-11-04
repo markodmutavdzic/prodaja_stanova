@@ -1,6 +1,4 @@
 import datetime
-from functools import wraps
-
 import jwt
 from flask import Blueprint, request, current_app, jsonify
 from marshmallow import ValidationError
@@ -9,6 +7,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app import enums
 from app.marsh import new_user_schema, edit_user_schema, login_schema, edit_current_user_schema
 from app.models import db, User
+from app.routes.token import token_required
 from app.serialize import users_serialize, user_serialize
 
 usr = Blueprint('user', __name__, url_prefix='/user')
@@ -17,22 +16,6 @@ usr = Blueprint('user', __name__, url_prefix='/user')
 @usr.route('/')
 def hello():
     return 'Zdravo, user', 200
-
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = None
-        if 'access-token' in request.headers:
-            token = request.headers.get('access-token')
-        if not token:
-            return jsonify({'message': 'Token is missing'}), 401
-        try:
-            data = jwt.decode(token, current_app.config.get('SECRET_KEY'), algorithms=['HS256'])
-            current_user = User.query.filter_by(id=data.get('id')).first()
-        except:
-            return jsonify({'message': 'Token is invalid.'}), 401
-        return f(current_user, *args, **kwargs)
-    return decorated
 
 
 @usr.route('/login', methods=['POST'])
@@ -50,7 +33,7 @@ def login():
     return jsonify({"message": "Invalid password"}), 401
 
 
-@usr.route('/add_new_user', methods=['POST'])
+@usr.route('/add_new', methods=['POST'])
 @token_required
 def add_new_user(current_user):
     if current_user.role is not enums.UserRole.ADMIN:
@@ -78,7 +61,7 @@ def add_new_user(current_user):
     return jsonify({"message": "New user created."}), 200
 
 
-@usr.route('/edit_user', methods=['POST'])
+@usr.route('/edit', methods=['POST'])
 @token_required
 def edit_user(current_user):
     if current_user.role is not enums.UserRole.ADMIN:
@@ -108,7 +91,7 @@ def edit_user(current_user):
     return jsonify({"message": "User edited."}), 200
 
 
-@usr.route('/edit_current_user', methods=['POST'])
+@usr.route('/edit_current', methods=['POST'])
 @token_required
 def edit_current_user(current_user):
     data = edit_current_user_schema.load(request.get_json())
@@ -132,7 +115,7 @@ def edit_current_user(current_user):
     return jsonify({"message": "Current user edited."}), 200
 
 
-@usr.route('/all_users', methods=['GET'])
+@usr.route('/all', methods=['GET'])
 @token_required
 def all_users(current_user):
     if current_user.role is not enums.UserRole.ADMIN:
