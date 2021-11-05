@@ -47,7 +47,7 @@ edit_current_user_schema = EditCurrentUser()
 class NewApartment(Schema):
     lamella = fields.Str(validate=Length(max=50))
     quadrature = fields.Decimal(required=True)
-    floor = fields.Str(required=True, validate=Length(max=50))
+    floor = fields.Integer(required=True)
     num_rooms = fields.Decimal(required=True)
     orientation = fields.Str(required=True, validate=validate.OneOf(["ISTOK", "ZAPAD", "SEVER", "JUG"]))
     num_terrace = fields.Integer(required=True)
@@ -65,7 +65,7 @@ class EditApartment(Schema):
     id = fields.Integer(required=True)
     lamella = fields.Str(validate=Length(max=50))
     quadrature = fields.Decimal()
-    floor = fields.Str(validate=Length(max=50))
+    floor = fields.Integer()
     num_rooms = fields.Decimal()
     orientation = fields.Str(validate=validate.OneOf(["ISTOK", "ZAPAD", "SEVER", "JUG"]))
     num_terrace = fields.Integer()
@@ -77,3 +77,25 @@ class EditApartment(Schema):
 
 
 edit_apartment_schema = EditApartment()
+
+
+class FilterApartment(Schema):
+    quadrature_from = fields.Decimal()
+    quadrature_to = fields.Decimal()
+    floor_from = fields.Integer()
+    floor_to = fields.Integer()
+    num_rooms_from = fields.Decimal()
+    num_rooms_to = fields.Decimal()
+    orientation = fields.Str(validate=validate.OneOf(["ISTOK", "ZAPAD", "SEVER", "JUG"]))
+    num_terrace_from = fields.Integer()
+    num_terrace_to = fields.Integer()
+    price_from = fields.Decimal()
+    price_to = fields.Decimal()
+    status = fields.Str(validate=validate.OneOf(["SLOBODAN", "REZERVISAN", "PRODAT"]))
+    new_construction = fields.Boolean()
+    in_construction = fields.Boolean()
+    available_from_from = fields.Date()
+    available_from_to = fields.Date()
+
+
+filter_apartment_schema = FilterApartment()

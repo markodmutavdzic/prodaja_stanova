@@ -19,7 +19,7 @@ class Apartment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     lamella = db.Column(db.String(50))
     quadrature = db.Column(db.DECIMAL, nullable=False)
-    floor = db.Column(db.String(50), nullable=False)
+    floor = db.Column(db.Integer, nullable=False)
     num_rooms = db.Column(db.DECIMAL, nullable=False)
     orientation = db.Column(db.Enum(Orientation))
     num_terrace = db.Column(db.Integer, nullable=False)

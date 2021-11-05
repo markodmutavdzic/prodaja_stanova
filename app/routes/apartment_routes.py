@@ -2,8 +2,9 @@ from flask import Blueprint, jsonify, request
 from marshmallow import ValidationError
 
 from app import enums, db
-from app.marsh import new_apartment_schema, edit_apartment_schema
+from app.marsh import new_apartment_schema, edit_apartment_schema, filter_apartment_schema
 from app.models import Apartment
+from app.serialize import apartments_serialize, apartment_serialize
 from app.token import token_required
 
 apa = Blueprint('apartment', __name__, url_prefix='/apartment')
@@ -14,7 +15,7 @@ def hello():
     return 'Zdravo, apartment', 200
 
 
-@apa.route('/add')
+@apa.route('/add', methods=['POST'])
 @token_required
 def add_apartment(current_user):
     if current_user.role is not enums.UserRole.ADMIN:
@@ -44,7 +45,7 @@ def add_apartment(current_user):
     return jsonify({"message": "New apartment created."}), 200
 
 
-@apa.route('/edit')
+@apa.route('/edit', methods=['POST'])
 @token_required
 def edit_apartment(current_user):
     if current_user.role is not enums.UserRole.ADMIN:
@@ -85,3 +86,33 @@ def edit_apartment(current_user):
     db.session.commit()
 
     return jsonify({"message": "Apartment edited."}), 200
+
+
+@apa.route('/all', methods=['GET', 'POST'])
+# @token_required
+def all_apartments():
+
+    try:
+        data = filter_apartment_schema.load(request.get_json())
+    except ValidationError as err:
+        return err.messages, 400
+
+    apartments = Apartment.query
+
+    if data.quadrature_from:
+        apartments = apartments.filter(Apartment.quadrature > data.quadrature_from)
+    if data.quadrature_to:
+        apartments = apartments.filter(Apartment.quadrature < data.quadrature_to)
+    if data.floor_from:
+        apartments = apartments.filter(Apartment.quadrature < data.quadrature_to)
+
+
+
+
+
+
+    apartments = apartments.all()
+
+    result = apartments_serialize(apartments)
+
+    return jsonify({"apartments": result}), 200
