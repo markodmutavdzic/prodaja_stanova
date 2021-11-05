@@ -4,7 +4,7 @@ from marshmallow import ValidationError
 from app import enums, db
 from app.marsh import new_apartment_schema
 from app.models import Apartment
-from app.routes.token import token_required
+from app.token import token_required
 
 apa = Blueprint('apartment', __name__, url_prefix='/apartment')
 

@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app import enums
 from app.marsh import new_user_schema, edit_user_schema, login_schema, edit_current_user_schema
 from app.models import db, User
-from app.routes.token import token_required
+from app.token import token_required
 from app.serialize import users_serialize, user_serialize
 
 usr = Blueprint('user', __name__, url_prefix='/user')
