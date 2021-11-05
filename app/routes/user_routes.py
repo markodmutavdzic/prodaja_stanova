@@ -21,7 +21,7 @@ def hello():
 @usr.route('/login', methods=['POST'])
 def login():
     auth = login_schema.load(request.get_json())
-    user = User.query.filter_by(username=auth.get('username')).first()
+    user = User.query.filter(User.username == auth.get('username')).first()
     if not user:
         return jsonify({"message": "User with that username doesn't exist"}), 401
     if check_password_hash(user.password, auth.get('password')):
@@ -33,7 +33,7 @@ def login():
     return jsonify({"message": "Invalid password"}), 401
 
 
-@usr.route('/add_new', methods=['POST'])
+@usr.route('/add', methods=['POST'])
 @token_required
 def add_new_user(current_user):
     if current_user.role is not enums.UserRole.ADMIN:
@@ -44,7 +44,7 @@ def add_new_user(current_user):
     except ValidationError as err:
         return err.messages, 400
 
-    user = User.query.filter_by(username=data.get('username')).first()
+    user = User.query.filter(User.username == data.get('username')).first()
     if user:
         return jsonify({"message": "User with that username already exists."}), 400
 
@@ -68,19 +68,19 @@ def edit_user(current_user):
         return jsonify({"message": "User must be ADMIN"}), 400
 
     data = edit_user_schema.load(request.get_json())
-    user = User.query.filter_by(id=data.get('id')).first()
+    user = User.query.filter(User.id == data.get('id')).first()
     if not user:
         return jsonify({"message": "User with that id doesnt exists."}), 400
 
+    if data.get('username'):
+        check_user = User.query.filter(User.username == data.get('username')).first()
+        if check_user and (check_user.id != user.id):
+            return jsonify({"message": "User with that username already exists."}), 400
+        user.username = data.get('username')
     if data.get('first_name'):
         user.first_name = data.get('first_name')
     if data.get('last_name'):
         user.last_name = data.get('last_name')
-    if data.get('username'):
-        user = User.query.filter_by(username=data.get('username')).first()
-        if user:
-            return jsonify({"message": "User with that username already exists."}), 400
-        user.username = data.get('username')
     if data.get('password'):
         user.password = generate_password_hash(data.get('password'), method='sha256')
     if data.get('role'):
@@ -97,14 +97,15 @@ def edit_current_user(current_user):
     data = edit_current_user_schema.load(request.get_json())
     user = current_user
 
+    if data.get('username'):
+        check_user = User.query.filter(User.username == data.get('username')).first()
+        if check_user and (check_user.id != user.id):
+            return jsonify({"message": "User with that username already exists."}), 400
+        user.username = data.get('username')
     if data.get('first_name'):
         user.first_name = data.get('first_name')
     if data.get('last_name'):
         user.last_name = data.get('last_name')
-    if data.get('username'):
-        if user:
-            return jsonify({"message": "User with that username already exists."}), 400
-        user.username = data.get('username')
     if data.get('password'):
         user.password = generate_password_hash(data.get('password'), method='sha256')
     if data.get('role'):
@@ -123,7 +124,6 @@ def all_users(current_user):
 
     users = User.query.all()
     result = users_serialize(users)
-    #password se ne vidi ali moze da se menja u user_edit
     return jsonify({"users": result}), 200
 
 

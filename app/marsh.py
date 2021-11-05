@@ -49,13 +49,31 @@ class NewApartment(Schema):
     quadrature = fields.Decimal(required=True)
     floor = fields.Str(required=True, validate=Length(max=50))
     num_rooms = fields.Decimal(required=True)
-    orientation = fields.Str(required=True)
+    orientation = fields.Str(required=True, validate=validate.OneOf(["ISTOK", "ZAPAD", "SEVER", "JUG"]))
     num_terrace = fields.Integer(required=True)
     price = fields.Decimal(required=True)
-    status = fields.Str(required=True)
+    status = fields.Str(required=True, validate=validate.OneOf(["SLOBODAN", "REZERVISAN", "PRODAT"]))
     new_construction = fields.Boolean()
     in_construction = fields.Boolean()
     available_from = fields.Date()
 
 
 new_apartment_schema = NewApartment()
+
+
+class EditApartment(Schema):
+    id = fields.Integer(required=True)
+    lamella = fields.Str(validate=Length(max=50))
+    quadrature = fields.Decimal()
+    floor = fields.Str(validate=Length(max=50))
+    num_rooms = fields.Decimal()
+    orientation = fields.Str(validate=validate.OneOf(["ISTOK", "ZAPAD", "SEVER", "JUG"]))
+    num_terrace = fields.Integer()
+    price = fields.Decimal()
+    status = fields.Str(validate=validate.OneOf(["SLOBODAN", "REZERVISAN", "PRODAT"]))
+    new_construction = fields.Boolean()
+    in_construction = fields.Boolean()
+    available_from = fields.Date()
+
+
+edit_apartment_schema = EditApartment()
