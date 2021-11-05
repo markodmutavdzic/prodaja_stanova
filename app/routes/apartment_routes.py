@@ -16,10 +16,11 @@ def hello():
 
 
 @apa.route('/add', methods=['POST'])
-@token_required
-def add_apartment(current_user):
-    if current_user.role is not enums.UserRole.ADMIN:
-        return jsonify({"message": "User must be ADMIN"}), 400
+# @token_required
+# def add_apartment(current_user):
+def add_apartment():
+#     if current_user.role is not enums.UserRole.ADMIN:
+#         return jsonify({"message": "User must be ADMIN"}), 400
 
     try:
         data = new_apartment_schema.load(request.get_json())
@@ -88,7 +89,7 @@ def edit_apartment(current_user):
     return jsonify({"message": "Apartment edited."}), 200
 
 
-@apa.route('/all', methods=['GET', 'POST'])
+@apa.route('/all', methods=['POST'])
 # @token_required
 def all_apartments():
 
@@ -99,12 +100,13 @@ def all_apartments():
 
     apartments = Apartment.query
 
-    if data.quadrature_from:
-        apartments = apartments.filter(Apartment.quadrature > data.quadrature_from)
-    if data.quadrature_to:
-        apartments = apartments.filter(Apartment.quadrature < data.quadrature_to)
-    if data.floor_from:
-        apartments = apartments.filter(Apartment.quadrature < data.quadrature_to)
+    if data:
+        if data.get("quadrature_from"):
+            apartments = apartments.filter(Apartment.quadrature > data.get("quadrature_from"))
+        if data.get("quadrature_to"):
+            apartments = apartments.filter(Apartment.quadrature < data.get("quadrature_to"))
+        # if data.quadrature_to:
+        #     apartments = apartments.filter(Apartment.quadrature < data.quadrature_to)
 
 
 
