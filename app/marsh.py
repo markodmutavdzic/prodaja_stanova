@@ -96,6 +96,8 @@ class FilterApartment(Schema):
     in_construction = fields.Boolean()
     available_from_from = fields.Date()
     available_from_to = fields.Date()
+    order_id = fields.Str(validate=validate.OneOf(["ASC", "DESC"]))
+    order_price = fields.Str(validate=validate.OneOf(["ASC", "DESC"]))
 
 
 filter_apartment_schema = FilterApartment()

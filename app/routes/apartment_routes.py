@@ -102,16 +102,47 @@ def all_apartments():
 
     if data:
         if data.get("quadrature_from"):
-            apartments = apartments.filter(Apartment.quadrature > data.get("quadrature_from"))
+            apartments = apartments.filter(Apartment.quadrature >= data.get("quadrature_from"))
         if data.get("quadrature_to"):
-            apartments = apartments.filter(Apartment.quadrature < data.get("quadrature_to"))
-        # if data.quadrature_to:
-        #     apartments = apartments.filter(Apartment.quadrature < data.quadrature_to)
-
-
-
-
-
+            apartments = apartments.filter(Apartment.quadrature <= data.get("quadrature_to"))
+        if data.get("floor_from"):
+            apartments = apartments.filter(Apartment.floor >= data.get("floor_from"))
+        if data.get("floor_to"):
+            apartments = apartments.filter(Apartment.floor <= data.get("floor_to"))
+        if data.get("num_rooms_from"):
+            apartments = apartments.filter(Apartment.num_rooms >= data.get("num_rooms_from"))
+        if data.get("num_rooms_to"):
+            apartments = apartments.filter(Apartment.num_rooms <= data.get("num_rooms_to"))
+        if data.get("orientation"):
+            apartments = apartments.filter(Apartment.orientation == data.get("orientation"))
+        if data.get("num_terrace_from"):
+            apartments = apartments.filter(Apartment.num_terrace >= data.get("num_terrace_from"))
+        if data.get("num_terrace_to"):
+            apartments = apartments.filter(Apartment.num_terrace <= data.get("num_terrace_to"))
+        if data.get("price_from"):
+            apartments = apartments.filter(Apartment.price >= data.get("price_from"))
+        if data.get("price_to"):
+            apartments = apartments.filter(Apartment.price <= data.get("price_to"))
+        if data.get("status"):
+            apartments = apartments.filter(Apartment.status == data.get("status"))
+        if data.get("new_construction"):
+            apartments = apartments.filter(Apartment.new_construction.is_(data.get("new_construction")))
+        if data.get("in_construction"):
+            apartments = apartments.filter(Apartment.in_construction.is_(data.get("in_construction")))
+        if data.get("available_from_from"):
+            apartments = apartments.filter(Apartment.available_from >= data.get("available_from_from"))
+        if data.get("available_from_to"):
+            apartments = apartments.filter(Apartment.available_from <= data.get("available_from_to"))
+        if data.get("order_id"):
+            if data.get("order_id") == 'ASC':
+                apartments = apartments.order_by(Apartment.id.asc())
+            if data.get("order_id") == 'DESC':
+                apartments = apartments.order_by(Apartment.id.desc())
+        if data.get("order_price"):
+            if data.get("order_price") == 'ASC':
+                apartments = apartments.order_by(Apartment.price.asc())
+            if data.get("order_price") == 'DESC':
+                apartments = apartments.order_by(Apartment.price.desc())
 
     apartments = apartments.all()
 
