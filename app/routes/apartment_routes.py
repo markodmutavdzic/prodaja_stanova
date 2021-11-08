@@ -4,7 +4,7 @@ from marshmallow import ValidationError
 from app import enums, db
 from app.marsh import new_apartment_schema, edit_apartment_schema, filter_apartment_schema
 from app.models import Apartment
-from app.serialize import apartments_serialize, apartment_serialize
+from app.serialize import apartments_serialize
 from app.token import token_required
 
 apa = Blueprint('apartment', __name__, url_prefix='/apartment')
@@ -29,6 +29,7 @@ def add_apartment():
 
     new_apartment = Apartment()
     new_apartment.lamella = data.get('lamella')
+    new_apartment.address = data.get('address')
     new_apartment.quadrature = data.get('quadrature')
     new_apartment.floor = data.get('floor')
     new_apartment.num_rooms = data.get('num_rooms')
@@ -63,6 +64,8 @@ def edit_apartment(current_user):
 
     if data.get('lamella'):
         apartment.lamella = data.get('lamella')
+    if data.get('address'):
+        apartment.address = data.get('address')
     if data.get('quadrature'):
         apartment.quadrature = data.get('quadrature')
     if data.get('floor'):
@@ -101,6 +104,10 @@ def all_apartments():
     apartments = Apartment.query
 
     if data:
+        if data.get("lamella"):
+            apartments = apartments.filter(Apartment.lamella.ilike("%"+data.get("lamella")+"%"))
+        if data.get("address"):
+            apartments = apartments.filter(Apartment.address.ilike("%"+data.get("address")+"%"))
         if data.get("quadrature_from"):
             apartments = apartments.filter(Apartment.quadrature >= data.get("quadrature_from"))
         if data.get("quadrature_to"):
@@ -134,14 +141,14 @@ def all_apartments():
         if data.get("available_from_to"):
             apartments = apartments.filter(Apartment.available_from <= data.get("available_from_to"))
         if data.get("order_id"):
-            if data.get("order_id") == 'ASC':
+            if data.get("order_id") == enums.Order.ASC:
                 apartments = apartments.order_by(Apartment.id.asc())
-            if data.get("order_id") == 'DESC':
+            if data.get("order_id") == enums.Order.DESC:
                 apartments = apartments.order_by(Apartment.id.desc())
         if data.get("order_price"):
-            if data.get("order_price") == 'ASC':
+            if data.get("order_price") == enums.Order.ASC:
                 apartments = apartments.order_by(Apartment.price.asc())
-            if data.get("order_price") == 'DESC':
+            if data.get("order_price") == enums.Order.DESC:
                 apartments = apartments.order_by(Apartment.price.desc())
 
     apartments = apartments.all()

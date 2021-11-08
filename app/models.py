@@ -15,9 +15,11 @@ class User (db.Model):
     role = db.Column(db.Enum(UserRole), nullable=False)
 
 
+#TODO dodati slike
 class Apartment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     lamella = db.Column(db.String(50))
+    address = db.Column(db.String(100), nullable=False)
     quadrature = db.Column(db.DECIMAL, nullable=False)
     floor = db.Column(db.Integer, nullable=False)
     num_rooms = db.Column(db.DECIMAL, nullable=False)

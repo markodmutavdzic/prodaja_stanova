@@ -19,10 +19,12 @@ def users_serialize(users):
         result.append(user_add)
     return result
 
+
 def apartment_serialize(apartment_db):
     apartment = {
         "id": apartment_db.id,
         "lamella": apartment_db.lamella,
+        "address": apartment_db.address,
         "quadrature": apartment_db.quadrature,
         "floor": apartment_db.floor,
         "num_rooms": apartment_db.num_rooms,

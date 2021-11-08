@@ -40,3 +40,7 @@ class PaymentMethod(str, enum.Enum):
     KES = 'KES'
     KREDIT = 'KREDIT'
     MESOVITO = 'MESOVITO'
+
+class Order(str, enum.Enum):
+    ASC = "ASC"
+    DESC = "DESC"

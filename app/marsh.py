@@ -46,6 +46,7 @@ edit_current_user_schema = EditCurrentUser()
 
 class NewApartment(Schema):
     lamella = fields.Str(validate=Length(max=50))
+    address = fields.Str(required=True, validate=Length(max=100))
     quadrature = fields.Decimal(required=True)
     floor = fields.Integer(required=True)
     num_rooms = fields.Decimal(required=True)
@@ -64,6 +65,7 @@ new_apartment_schema = NewApartment()
 class EditApartment(Schema):
     id = fields.Integer(required=True)
     lamella = fields.Str(validate=Length(max=50))
+    address = fields.Str(validate=Length(max=100))
     quadrature = fields.Decimal()
     floor = fields.Integer()
     num_rooms = fields.Decimal()
@@ -80,6 +82,8 @@ edit_apartment_schema = EditApartment()
 
 
 class FilterApartment(Schema):
+    lamella = fields.Str(validate=Length(max=50))
+    address = fields.Str(validate=Length(max=100))
     quadrature_from = fields.Decimal()
     quadrature_to = fields.Decimal()
     floor_from = fields.Integer()
