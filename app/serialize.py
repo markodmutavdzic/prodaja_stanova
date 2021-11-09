@@ -45,3 +45,28 @@ def apartments_serialize(apartments):
         apartment_add = apartment_serialize(apartment)
         result.append(apartment_add)
     return result
+
+
+def customer_serialize(customer_db):
+    customer = {
+        "id": customer_db.id,
+        "legal_entity": customer_db.legal_entity,
+        "name": customer_db.name,
+        "email": customer_db.email,
+        "telephone_number": customer_db.telephone_number,
+        "pib_jmbg": customer_db.pib_jmbg,
+        "place": customer_db.place,
+        "street": customer_db.street,
+        "num": customer_db.num,
+        "date_of_first_visit": str(customer_db.date_of_first_visit)
+    }
+    return customer
+
+
+def customers_serialize(customers):
+    result = []
+    for customer in customers:
+        customer_add = customer_serialize(customer)
+        result.append(customer_add)
+
+    return result

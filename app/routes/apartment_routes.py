@@ -93,7 +93,6 @@ def edit_apartment(current_user):
 
 
 @apa.route('/all', methods=['POST'])
-# @token_required
 def all_apartments():
 
     try:

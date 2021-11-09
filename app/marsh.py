@@ -34,6 +34,18 @@ class EditUser(Schema):
 edit_user_schema = EditUser()
 
 
+class SearchUser(Schema):
+    first_name = fields.Str(validate=Length(max=50))
+    last_name = fields.Str(validate=Length(max=50))
+    username = fields.Str(validate=Length(max=50))
+    role = fields.Str(validate=validate.OneOf(["ADMIN", "PRODAVAC", "FINANSIJE"]))
+
+
+search_user_schema = SearchUser()
+
+
+
+
 class EditCurrentUser(Schema):
     first_name = fields.Str(validate=Length(max=50))
     last_name = fields.Str(validate=Length(max=50))
@@ -105,3 +117,50 @@ class FilterApartment(Schema):
 
 
 filter_apartment_schema = FilterApartment()
+
+
+class NewCustomer(Schema):
+    legal_entity = fields.Str(validate=validate.OneOf(["FIZICKO", "PRAVNO"]), required=True)
+    name = fields.Str(required=True, validate=Length(max=50))
+    email = fields.Email()
+    telephone_number = fields.Str(required=True, validate=Length(max=100))
+    pib_jmbg = fields.Str(required=True, validate=Length(max=50))
+    place = fields.Str(required=True, validate=Length(max=100))
+    street = fields.Str(required=True, validate=Length(max=100))
+    num = fields.Str(required=True, validate=Length(max=100))
+    date_of_first_visit = fields.Date()
+
+
+new_customer_schema = NewCustomer()
+
+
+class EditCustomer(Schema):
+    id = fields.Integer(required=True)
+    legal_entity = fields.Str(validate=validate.OneOf(["FIZICKO", "PRAVNO"]))
+    name = fields.Str(validate=Length(max=50))
+    email = fields.Email()
+    telephone_number = fields.Str(validate=Length(max=100))
+    pib_jmbg = fields.Str(validate=Length(max=50))
+    place = fields.Str(validate=Length(max=100))
+    street = fields.Str(validate=Length(max=100))
+    num = fields.Str(validate=Length(max=100))
+    date_of_first_visit = fields.Date()
+
+
+edit_customer_schema = EditCustomer()
+
+
+class SearchCustomer(Schema):
+    legal_entity = fields.Str(validate=validate.OneOf(["FIZICKO", "PRAVNO"]))
+    name = fields.Str(validate=Length(max=50))
+    email = fields.Email()
+    telephone_number = fields.Str(validate=Length(max=100))
+    pib_jmbg = fields.Str(validate=Length(max=50))
+    place = fields.Str(validate=Length(max=100))
+    street = fields.Str(validate=Length(max=100))
+    num = fields.Str(validate=Length(max=100))
+    date_of_first_visit_from = fields.Date()
+    date_of_first_visit_to = fields.Date()
+
+
+search_customer_schema = SearchCustomer()

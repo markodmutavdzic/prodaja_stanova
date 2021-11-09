@@ -5,7 +5,7 @@ from marshmallow import ValidationError
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import enums
-from app.marsh import new_user_schema, edit_user_schema, login_schema, edit_current_user_schema
+from app.marsh import new_user_schema, edit_user_schema, login_schema, edit_current_user_schema, search_user_schema
 from app.models import db, User
 from app.token import token_required
 from app.serialize import users_serialize, user_serialize
@@ -34,10 +34,11 @@ def login():
 
 
 @usr.route('/add', methods=['POST'])
-@token_required
-def add_new_user(current_user):
-    if current_user.role is not enums.UserRole.ADMIN:
-        return jsonify({"message": "User must be ADMIN"}), 400
+# @token_required
+# def add_new_user(current_user):
+def add_new_user():
+    # if current_user.role is not enums.UserRole.ADMIN:
+    #     return jsonify({"message": "User must be ADMIN"}), 400
 
     try:
         data = new_user_schema.load(request.get_json())
@@ -67,7 +68,11 @@ def edit_user(current_user):
     if current_user.role is not enums.UserRole.ADMIN:
         return jsonify({"message": "User must be ADMIN"}), 400
 
-    data = edit_user_schema.load(request.get_json())
+    try:
+        data = edit_user_schema.load(request.get_json())
+    except ValidationError as err:
+        return err.messages, 400
+
     user = User.query.filter(User.id == data.get('id')).first()
     if not user:
         return jsonify({"message": "User with that id doesnt exists."}), 400
@@ -94,7 +99,12 @@ def edit_user(current_user):
 @usr.route('/edit_current', methods=['POST'])
 @token_required
 def edit_current_user(current_user):
-    data = edit_current_user_schema.load(request.get_json())
+
+    try:
+        data = edit_current_user_schema.load(request.get_json())
+    except ValidationError as err:
+        return err.messages, 400
+
     user = current_user
 
     if data.get('username'):
@@ -116,13 +126,29 @@ def edit_current_user(current_user):
     return jsonify({"message": "Current user edited."}), 200
 
 
-@usr.route('/all', methods=['GET'])
-@token_required
-def all_users(current_user):
-    if current_user.role is not enums.UserRole.ADMIN:
-        return jsonify({"message": "User must be ADMIN"}), 400
+@usr.route('/all', methods=['POST'])
+# @token_required
+# def all_users(current_user):
+#     if current_user.role is not enums.UserRole.ADMIN:
+#         return jsonify({"message": "User must be ADMIN"}), 400
+def all_users():
+    try:
+        data = search_user_schema.load(request.get_json())
+    except ValidationError as err:
+        return err.messages, 400
+    users = User.query
 
-    users = User.query.all()
+    if data.get('username'):
+        users = users.filter(User.username.ilike("%" + data.get("username") + "%"))
+    if data.get('first_name'):
+        users = users.filter(User.first_name.ilike("%" + data.get("first_name") + "%"))
+    if data.get('last_name'):
+        users = users.filter(User.last_name.ilike("%" + data.get("last_name") + "%"))
+    if data.get('role'):
+        users = users.filter(User.role == (data.get("role")))
+
+    users = users.all()
+
     result = users_serialize(users)
     return jsonify({"users": result}), 200
 
