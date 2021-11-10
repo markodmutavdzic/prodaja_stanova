@@ -29,12 +29,11 @@ def add_apartment_customer():
     if offer_exists:
         return jsonify({"message": "Offer from that costumer for that apartment already exists"}), 200
 
+    apartment = Apartment.query.filter(Apartment.id == data.get("apartment_id")).first()
     new_apartment_customer = ApartmentCustomer()
     new_apartment_customer.apartment_id = data.get("apartment_id")
     new_apartment_customer.customer_id = data.get("customer_id")
     new_apartment_customer.customer_status = data.get("customer_status")
-    new_apartment_customer.customer_price = data.get("customer_price")
-    # new_apartment_customer.price_approved = data.get("price_approved")
     new_apartment_customer.note = data.get("note")
     new_apartment_customer.currency = data.get("currency")
     new_apartment_customer.payment_method = data.get("payment_method")
@@ -45,6 +44,11 @@ def add_apartment_customer():
     new_apartment_customer.cash_amount = data.get("cash_amount")
     new_apartment_customer.contract_number = data.get("contract_number")
     new_apartment_customer.contract_date = data.get("contract_date")
+    new_apartment_customer.customer_price = data.get("customer_price")
+    if new_apartment_customer.customer_price < apartment.lowest_price:
+        new_apartment_customer.price_approved = False
+    else:
+        new_apartment_customer.price_approved = True
 
     db.session.add(new_apartment_customer)
     db.session.commit()
@@ -64,10 +68,47 @@ def edit_apartment_customer():
     except ValidationError as err:
         return err.messages, 400
 
-    apartment_customer = ApartmentCustomer.query.filter(ApartmentCustomer.id == data.get('id'))
+    apartment_customer = ApartmentCustomer.query.filter(ApartmentCustomer.id == data.get('id')).first()
     if not apartment_customer:
         return jsonify({"message": "Offer with that id doesnt exists"}), 400
-    apartment_customer.update(data)
+    # apartment_customer.update(data)
+    #
+    # db.session.commit()
+
+    apartment = Apartment.query.filter(Apartment.id == apartment_customer.apartment_id).first()
+    if data.get("apartment_id"):
+        apartment_customer.apartment_id = data.get("apartment_id")
+    if data.get("customer_id"):
+        apartment_customer.customer_id =  data.get("customer_id")
+    if data.get("customer_status"):
+        apartment_customer.customer_status = data.get("customer_status")
+    if data.get("note"):
+        apartment_customer.note = data.get("note")
+    if data.get("currency"):
+        apartment_customer.currency = data.get("currency")
+    if data.get("payment_method"):
+        apartment_customer.payment_method = data.get("payment_method")
+    if data.get("deposit_amount"):
+        apartment_customer.deposit_amount = data.get("deposit_amount")
+    if data.get("contract_deadline"):
+        apartment_customer.contract_deadline = data.get("contract_deadline")
+    if data.get("bank"):
+        apartment_customer.bank = data.get("bank")
+    if data.get("loan_amount"):
+        apartment_customer.loan_amount = data.get("loan_amount")
+    if data.get("cash_amount"):
+        apartment_customer.cash_amount = data.get("cash_amount")
+    if data.get("contract_number"):
+        apartment_customer.contract_number = data.get("contract_number")
+    if data.get("contract_date"):
+        apartment_customer.contract_date = data.get("contract_date")
+    if data.get("customer_price"):
+        apartment_customer.customer_price = data.get("customer_price")
+    if data.get("currency"):
+        if apartment_customer.customer_price < apartment.lowest_price:
+            apartment_customer.price_approved = False
+        else:
+            apartment_customer.price_approved = True
 
     db.session.commit()
 

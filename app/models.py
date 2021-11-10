@@ -26,6 +26,7 @@ class Apartment(db.Model):
     orientation = db.Column(db.Enum(Orientation))
     num_terrace = db.Column(db.Integer, nullable=False)
     price = db.Column(db.DECIMAL, nullable=False)
+    lowest_price = db.Column(db.DECIMAL, nullable=False)
     status = db.Column(db.Enum(Status), default=Status.SLOBODAN)
     new_construction = db.Column(db.Boolean, default=False)
     in_construction = db.Column(db.Boolean)

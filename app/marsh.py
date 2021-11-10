@@ -63,6 +63,7 @@ class NewApartment(Schema):
     orientation = fields.Str(required=True, validate=validate.OneOf(["ISTOK", "ZAPAD", "SEVER", "JUG"]))
     num_terrace = fields.Integer(required=True)
     price = fields.Decimal(required=True)
+    lowest_price = fields.Decimal(required=True)
     status = fields.Str(required=True, validate=validate.OneOf(["SLOBODAN", "REZERVISAN", "PRODAT"]))
     new_construction = fields.Boolean()
     in_construction = fields.Boolean()

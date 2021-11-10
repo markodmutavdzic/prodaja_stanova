@@ -2,5 +2,5 @@
   "SECRET_KEY" : "prodaja_stanova",
   "SQLALCHEMY_DATABASE_URI" : "postgresql://postgres:0147@localhost:5432/prodaja_stanova",
   "SQLALCHEMY_TRACK_MODIFICATIONS" : "False",
-  "ROOT_DIR" : "/home/marko/Projekti/prodaja_stanova"
+  "UPLOAD_DIR" : "/home/marko/Projekti/prodaja_stanova/static/uploads"
 }

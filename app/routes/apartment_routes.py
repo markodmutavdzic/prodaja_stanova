@@ -43,6 +43,7 @@ def add_apartment():
     new_apartment.new_construction = data.get('new_construction')
     new_apartment.in_construction = data.get('in_construction')
     new_apartment.available_from = data.get('available_from')
+    new_apartment.lowest_price = data.get('lowest_price')
 
     db.session.add(new_apartment)
     db.session.commit()
@@ -51,7 +52,7 @@ def add_apartment():
 
 
 
-@apa.route('/add_images', methods=['POST'])
+@apa.route('/upload_images', methods=['POST'])
 def upload_image():
     images = request.files.getlist("images")
     apartment_id = int(request.form.get("id"))
@@ -65,8 +66,8 @@ def upload_image():
             filename = image.filename
             new_image = Image()
             new_image.file_name = image.filename
-            new_image.location = "not yet"
-            new_image.url = "not yet"
+            new_image.location = "none"
+            new_image.url = "none"
             db.session.add(new_image)
             db.session.flush()
             if filename != "":
@@ -76,17 +77,15 @@ def upload_image():
                     return jsonify({"message": "Wrong image type"}), 400
                 image.save(
                     os.path.join(
-                        current_app.config.get("ROOT_DIR"),
-                        "static/uploads",
+                        current_app.config.get("UPLOAD_DIR"),
                         "{}_{}".format(new_image.id, filename),
                     )
                 )
             new_image.location = os.path.join(
-                current_app.config.get("ROOT_DIR"),
-                "static/uploads",
+                current_app.config.get("UPLOAD_DIR"),
                 "{}_{}".format(new_image.id, filename),
             )
-            new_image.url = os.path.join("uploads", "{}_{}".format(new_image.id, filename))
+            new_image.url = os.path.join("{}_{}".format(new_image.id, filename))
             db.session.add(new_image)
             apartment.images.append(new_image)
 
