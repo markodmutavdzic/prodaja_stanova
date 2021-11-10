@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from marshmallow import ValidationError
 
 from app import enums, db
-from app.marsh import new_apartment_schema, edit_apartment_schema, filter_apartment_schema
+from app.marsh import new_apartment_schema, edit_apartment_schema, filter_apartment_schema, delete_schema
 from app.models import Apartment
 from app.serialize import apartments_serialize
 from app.token import token_required
@@ -157,3 +157,20 @@ def all_apartments():
     result = apartments_serialize(apartments)
 
     return jsonify({"apartments": result}), 200
+
+
+@apa.route("/delete", methods=['POST'])
+def delete_apartment():
+    try:
+        data = delete_schema.load(request.get_json())
+    except ValidationError as err:
+        return err.messages, 400
+
+    apartment_for_delete = Apartment.query.filter(Apartment.id == data.get("id")).first()
+    if not apartment_for_delete:
+        return jsonify({"message": "Apartment with that id doesnt exists."}), 400
+
+    db.session.delete(apartment_for_delete)
+    db.session.commit()
+
+    return jsonify({"message": "Apartment deleted"}), 200

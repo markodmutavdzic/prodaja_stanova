@@ -5,7 +5,8 @@ from marshmallow import ValidationError
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import enums
-from app.marsh import new_user_schema, edit_user_schema, login_schema, edit_current_user_schema, search_user_schema
+from app.marsh import new_user_schema, edit_user_schema, login_schema, edit_current_user_schema, search_user_schema, \
+    delete_schema
 from app.models import db, User
 from app.token import token_required
 from app.serialize import users_serialize, user_serialize
@@ -152,6 +153,22 @@ def all_users():
     result = users_serialize(users)
     return jsonify({"users": result}), 200
 
+
+@usr.route("/delete", methods=['POST'])
+def delete_user():
+    try:
+        data = delete_schema.load(request.get_json())
+    except ValidationError as err:
+        return err.messages, 400
+
+    user_for_delete = User.query.filter(User.id == data.get("id")).first()
+    if not user_for_delete:
+        return jsonify({"message": "User with that id doesnt exists."}), 400
+
+    db.session.delete(user_for_delete)
+    db.session.commit()
+
+    return jsonify({"message": "User deleted"}), 200
 
 
 

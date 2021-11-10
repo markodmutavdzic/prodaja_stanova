@@ -221,3 +221,11 @@ class ApartmentForCustomer(Schema):
 
 
 apartment_for_customer_schema = ApartmentForCustomer()
+
+
+class Delete(Schema):
+
+    id = fields.Integer(required=True)
+
+
+delete_schema = Delete()

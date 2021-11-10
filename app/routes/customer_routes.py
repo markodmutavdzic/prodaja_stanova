@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
 
-from app.marsh import new_customer_schema, edit_customer_schema, search_customer_schema
+from app.marsh import new_customer_schema, edit_customer_schema, search_customer_schema, delete_schema
 from app.models import Customer, db
 from app.serialize import customers_serialize
 
@@ -110,3 +110,20 @@ def all_customer():
     result = customers_serialize(customers)
 
     return jsonify({"customers": result}), 200
+
+
+@cus.route("/delete", methods=['POST'])
+def delete_customer():
+    try:
+        data = delete_schema.load(request.get_json())
+    except ValidationError as err:
+        return err.messages, 400
+
+    customer_for_delete = Customer.query.filter(Customer.id == data.get("id")).first()
+    if not customer_for_delete:
+        return jsonify({"message": "Customer with that id doesnt exists."}), 400
+
+    db.session.delete(customer_for_delete)
+    db.session.commit()
+
+    return jsonify({"message": "Customer deleted"}), 200

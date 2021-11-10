@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
 
 from app.marsh import new_apartment_customer_schema, edit_apartment_customer_schema, customers_for_apartment_schema, \
-    apartment_for_customer_schema
+    apartment_for_customer_schema, delete_schema
 from app.models import ApartmentCustomer, db, Customer, Apartment
 from app.serialize import customer_apartment_serialize, apartment_customer_serialize
 
@@ -56,7 +56,7 @@ def edit_apartment_customer():
 
     apartment_customer = ApartmentCustomer.query.filter(ApartmentCustomer.id == data.get('id'))
     if not apartment_customer:
-        return jsonify({"message": "That id doesnt exists."}), 400
+        return jsonify({"message": "Offer with that id doesnt exists"}), 400
     apartment_customer.update(data)
 
     db.session.commit()
@@ -94,3 +94,21 @@ def apartment_for_customer():
     result = apartment_customer_serialize(apartments_customer)
 
     return jsonify({"apartments_for_customer": result}), 200
+
+
+@apc.route("/delete", methods=['POST'])
+def delete_apartment_customer():
+    try:
+        data = delete_schema.load(request.get_json())
+    except ValidationError as err:
+        return err.messages, 400
+
+    apartment_customer_for_delete = ApartmentCustomer.query.filter(ApartmentCustomer.id == data.get("id")).first()
+    if not apartment_customer_for_delete:
+        return jsonify({"message": "Offer with that id doesnt exists."}), 400
+
+    db.session.delete(apartment_customer_for_delete)
+    db.session.commit()
+
+    return jsonify({"message": "Offer deleted"}), 200
+
