@@ -48,44 +48,46 @@ def add_apartment():
 
 
 @apa.route('/edit', methods=['POST'])
-@token_required
-def edit_apartment(current_user):
-    if current_user.role is not enums.UserRole.ADMIN:
-        return jsonify({"message": "User must be ADMIN"}), 400
+# @token_required
+# def edit_apartment(current_user):
+def edit_apartment():
+#     if current_user.role is not enums.UserRole.ADMIN:
+#         return jsonify({"message": "User must be ADMIN"}), 400
 
     try:
         data = edit_apartment_schema.load(request.get_json())
     except ValidationError as err:
         return err.messages, 400
 
-    apartment = Apartment.query.filter(Apartment.id == data.get('id')).first()
+    apartment = Apartment.query.filter(Apartment.id == data.get('id'))
     if not apartment:
         return jsonify({"message": "Apartment with that id doesnt exists."}), 400
+    apartment.update(data)
 
-    if data.get('lamella'):
-        apartment.lamella = data.get('lamella')
-    if data.get('address'):
-        apartment.address = data.get('address')
-    if data.get('quadrature'):
-        apartment.quadrature = data.get('quadrature')
-    if data.get('floor'):
-        apartment.floor = data.get('floor')
-    if data.get('num_rooms'):
-        apartment.num_rooms = data.get('num_rooms')
-    if data.get('orientation'):
-        apartment.orientation = data.get('orientation')
-    if data.get('num_terrace'):
-        apartment.num_terrace = data.get('num_terrace')
-    if data.get('price'):
-        apartment.price = data.get('price')
-    if data.get('status'):
-        apartment.status = data.get('status')
-    if data.get('new_construction'):
-        apartment.new_construction = data.get('new_construction')
-    if data.get('in_construction'):
-        apartment.in_construction = data.get('in_construction')
-    if data.get('available_from'):
-        apartment.available_from = data.get('available_from')
+    # if data.get('lamella'):
+    #     apartment.lamella = data.get('lamella')
+    # if data.get('address'):
+    #     apartment.address = data.get('address')
+    # if data.get('quadrature'):
+    #     apartment.quadrature = data.get('quadrature')
+    # if data.get('floor'):
+    #     apartment.floor = data.get('floor')
+    # if data.get('num_rooms'):
+    #     apartment.num_rooms = data.get('num_rooms')
+    # if data.get('orientation'):
+    #     apartment.orientation = data.get('orientation')
+    # if data.get('num_terrace'):
+    #     apartment.num_terrace = data.get('num_terrace')
+    # if data.get('price'):
+    #     apartment.price = data.get('price')
+    # if data.get('status'):
+    #     apartment.status = data.get('status')
+    # if data.get('new_construction'):
+    #     apartment.new_construction = data.get('new_construction')
+    # if data.get('in_construction'):
+    #     apartment.in_construction = data.get('in_construction')
+    # if data.get('available_from'):
+    #     apartment.available_from = data.get('available_from')
 
     db.session.commit()
 

@@ -47,7 +47,7 @@ class Customer(db.Model):
 
 class ApartmentCustomer(db.Model):
     id = db.Column('id', db.Integer, primary_key=True)
-    apartment_id = db.Column(db.Integer,db.ForeignKey('user.id'))
+    apartment_id = db.Column(db.Integer,db.ForeignKey('apartment.id'))
     customer_id = db.Column(db.Integer,db.ForeignKey('customer.id'))
     customer_status = db.Column(db.Enum(CostumerStatus))
     customer_price = db.Column(db.DECIMAL)
@@ -59,7 +59,7 @@ class ApartmentCustomer(db.Model):
     contract_deadline = db.Column(db.Date)
     bank = db.Column(db.String(50))
     loan_amount = db.Column(db.DECIMAL)
-    cash_aount = db.Column(db.DECIMAL)
+    cash_amount = db.Column(db.DECIMAL)
     contract_number = db.Column(db.String(100))
     contract_date = db.Column(db.Date)
 

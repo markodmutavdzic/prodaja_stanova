@@ -1,5 +1,4 @@
 
-
 def user_serialize(user_db):
     user = {
         "id": user_db.id,
@@ -8,7 +7,7 @@ def user_serialize(user_db):
         "password": "",
         "username": user_db.username,
         "role": user_db.role
-            }
+    }
     return user
 
 
@@ -68,5 +67,54 @@ def customers_serialize(customers):
     for customer in customers:
         customer_add = customer_serialize(customer)
         result.append(customer_add)
+
+    return result
+
+
+def offer_serialize(offer):
+    serialized_offer = {
+        "id": offer.id,
+        "apartment_id": offer.apartment_id,
+        "customer_id": offer.customer_id,
+        "customer_status": offer.customer_status,
+        "customer_price": offer.customer_price,
+        "price_approved": offer.price_approved,
+        "note": offer.note,
+        "currency": offer.currency,
+        "payment_method": offer.payment_method,
+        "deposit_amount": offer.deposit_amount,
+        "contract_deadline": offer.contract_deadline,
+        "bank": offer.bank,
+        "loan_amount": offer.loan_amount,
+        "cash_amount": offer.cash_amount,
+        "contract_number": offer.contract_number,
+        "contract_date": offer.contract_date
+    }
+
+    return serialized_offer
+
+
+def customer_apartment_serialize(customers_apartments):
+    result = []
+    for customer, offer in customers_apartments:
+        dict_to_append = {}
+        cust = customer_serialize(customer)
+        off = offer_serialize(offer)
+        dict_to_append.update(cust)
+        dict_to_append.update(off)
+        result.append(dict_to_append)
+
+    return result
+
+
+def apartment_customer_serialize(apartments_customer):
+    result = []
+    for apartment, offer in apartments_customer:
+        dict_to_append = {}
+        apart = apartment_serialize(apartment)
+        off = offer_serialize(offer)
+        dict_to_append.update(apart)
+        dict_to_append.update(off)
+        result.append(dict_to_append)
 
     return result

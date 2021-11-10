@@ -164,3 +164,60 @@ class SearchCustomer(Schema):
 
 
 search_customer_schema = SearchCustomer()
+
+
+class NewApartmentCustomer(Schema):
+    apartment_id = fields.Integer(required=True)
+    customer_id = fields.Integer(required=True)
+    customer_status = fields.Str(required=True, validate=validate.OneOf(["POTECNCIJALNI", "REZERVISAO", "KUPIO"]))
+    customer_price = fields.Decimal(required=True)
+    note = fields.Str()
+    currency = fields.Str(required=True, validate=validate.OneOf(["EUR", "RSD"]))
+    payment_method = fields.Str(validate=validate.OneOf(["KES", "KREDIT", "MESOVITO"]))
+    deposit_amount = fields.Decimal()
+    contract_deadline = fields.Date()
+    bank = fields.Str()
+    loan_amount = fields.Decimal()
+    cash_amount = fields.Decimal()
+    contract_number = fields.Str()
+    contract_date = fields.Date()
+
+
+new_apartment_customer_schema = NewApartmentCustomer()
+
+
+class EditApartmentCustomer(Schema):
+    id = fields.Integer(required=True)
+    apartment_id = fields.Integer()
+    customer_id = fields.Integer()
+    customer_status = fields.Str(validate=validate.OneOf(["POTECNCIJALNI", "REZERVISAO", "KUPIO"]))
+    customer_price = fields.Decimal()
+    note = fields.Str()
+    currency = fields.Str(validate=validate.OneOf(["EUR", "RSD"]))
+    payment_method = fields.Str(validate=validate.OneOf(["KES", "KREDIT", "MESOVITO"]))
+    deposit_amount = fields.Decimal()
+    contract_deadline = fields.Date()
+    bank = fields.Str()
+    loan_amount = fields.Decimal()
+    cash_amount = fields.Decimal()
+    contract_number = fields.Str()
+    contract_date = fields.Date()
+
+
+edit_apartment_customer_schema = EditApartmentCustomer()
+
+
+class CustomersForApartment(Schema):
+
+    apartment_id = fields.Integer(required=True)
+
+
+customers_for_apartment_schema = CustomersForApartment()
+
+
+class ApartmentForCustomer(Schema):
+
+    customer_id = fields.Integer(required=True)
+
+
+apartment_for_customer_schema = ApartmentForCustomer()
