@@ -30,6 +30,7 @@ class Apartment(db.Model):
     new_construction = db.Column(db.Boolean, default=False)
     in_construction = db.Column(db.Boolean)
     available_from = db.Column(db.Date)
+    images = db.relationship("Image", back_populates='apartment')
 
 
 class Customer(db.Model):
@@ -64,7 +65,13 @@ class ApartmentCustomer(db.Model):
     contract_date = db.Column(db.Date)
 
 
-
+class Image(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    file_name = db.Column(db.String, default=None)
+    location = db.Column(db.String, nullable=False)
+    url = db.Column(db.String, nullable=False)
+    apartment_id = db.Column(db.Integer, db.ForeignKey('apartment.id'))
+    apartment = db.relationship("Apartment", back_populates='images')
 
 
 

@@ -20,6 +20,7 @@ def users_serialize(users):
 
 
 def apartment_serialize(apartment_db):
+    urls = [image.url for image in apartment_db.images]
     apartment = {
         "id": apartment_db.id,
         "lamella": apartment_db.lamella,
@@ -33,7 +34,8 @@ def apartment_serialize(apartment_db):
         "status": apartment_db.status,
         "new_construction": apartment_db.new_construction,
         "in_construction": apartment_db.in_construction,
-        "available_from": str(apartment_db.available_from)
+        "available_from": str(apartment_db.available_from),
+        "images": urls
     }
     return apartment
 

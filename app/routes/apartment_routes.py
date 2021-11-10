@@ -1,13 +1,16 @@
-from flask import Blueprint, jsonify, request
+import os
+
+from flask import Blueprint, jsonify, request, current_app
 from marshmallow import ValidationError
 
 from app import enums, db
 from app.marsh import new_apartment_schema, edit_apartment_schema, filter_apartment_schema, delete_schema
-from app.models import Apartment
+from app.models import Apartment, Image
 from app.serialize import apartments_serialize
 from app.token import token_required
 
 apa = Blueprint('apartment', __name__, url_prefix='/apartment')
+UPLOAD_IMAGE_TYPES = [".jpg", ".jpeg", ".gif", ".png"]
 
 
 @apa.route('/')
@@ -46,6 +49,50 @@ def add_apartment():
 
     return jsonify({"message": "New apartment created."}), 200
 
+
+
+@apa.route('/add_images', methods=['POST'])
+def upload_image():
+    images = request.files.getlist("images")
+    apartment_id = int(request.form.get("id"))
+    apartment = Apartment.query.filter(Apartment.id == apartment_id).first()
+    if not apartment:
+        return jsonify({"message": "Apartment with that id doesnt exists."}), 400
+
+    if images:
+        for image in images:
+
+            filename = image.filename
+            new_image = Image()
+            new_image.file_name = image.filename
+            new_image.location = "not yet"
+            new_image.url = "not yet"
+            db.session.add(new_image)
+            db.session.flush()
+            if filename != "":
+                file_ext = os.path.splitext(filename)[1]
+                if file_ext not in UPLOAD_IMAGE_TYPES:
+                    db.session.rollback()
+                    return jsonify({"message": "Wrong image type"}), 400
+                image.save(
+                    os.path.join(
+                        current_app.config.get("ROOT_DIR"),
+                        "static/uploads",
+                        "{}_{}".format(new_image.id, filename),
+                    )
+                )
+            new_image.location = os.path.join(
+                current_app.config.get("ROOT_DIR"),
+                "static/uploads",
+                "{}_{}".format(new_image.id, filename),
+            )
+            new_image.url = os.path.join("uploads", "{}_{}".format(new_image.id, filename))
+            db.session.add(new_image)
+            apartment.images.append(new_image)
+
+        db.session.commit()
+
+    return jsonify({"message": "Images uploaded"}), 200
 
 @apa.route('/edit', methods=['POST'])
 # @token_required

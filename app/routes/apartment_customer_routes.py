@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
 
+from app import enums
 from app.marsh import new_apartment_customer_schema, edit_apartment_customer_schema, customers_for_apartment_schema, \
-    apartment_for_customer_schema, delete_schema
+    apartment_for_customer_schema, delete_schema, edit_apartment_customer_for_sale_schema
 from app.models import ApartmentCustomer, db, Customer, Apartment
 from app.serialize import customer_apartment_serialize, apartment_customer_serialize
+from app.token import token_required
 
 apc = Blueprint('apartment_customer', __name__, url_prefix='/apartment_customer')
 
@@ -15,13 +17,17 @@ def hello():
 
 
 # TODO logika za price approved
-# TODO lokiga za vec postojcu kombinaciju id jeva
 @apc.route("/add", methods=['POST'])
 def add_apartment_customer():
     try:
         data = new_apartment_customer_schema.load(request.get_json())
     except ValidationError as err:
         return err.messages, 400
+
+    offer_exists = ApartmentCustomer.query.filter(ApartmentCustomer.apartment_id == data.get("apartment_id"),
+                                                  ApartmentCustomer.customer_id == data.get("customer_id")).first()
+    if offer_exists:
+        return jsonify({"message": "Offer from that costumer for that apartment already exists"}), 200
 
     new_apartment_customer = ApartmentCustomer()
     new_apartment_customer.apartment_id = data.get("apartment_id")
@@ -47,10 +53,31 @@ def add_apartment_customer():
 
 
 # TODO logika za price approved
+# @token_required
 @apc.route("/edit", methods=['POST'])
 def edit_apartment_customer():
+# def edit_apartment_customer(current_user):
+#     if current_user.role is not enums.UserRole.FINANSIJE:
+    # return jsonify({"message": "User must be FINANSIJE"}), 400
     try:
         data = edit_apartment_customer_schema.load(request.get_json())
+    except ValidationError as err:
+        return err.messages, 400
+
+    apartment_customer = ApartmentCustomer.query.filter(ApartmentCustomer.id == data.get('id'))
+    if not apartment_customer:
+        return jsonify({"message": "Offer with that id doesnt exists"}), 400
+    apartment_customer.update(data)
+
+    db.session.commit()
+
+    return jsonify({"message": "Offer edited"}), 200
+
+
+@apc.route("/edit_for_sale", methods=['POST'])
+def edit_apartment_customer_for_sale():
+    try:
+        data = edit_apartment_customer_for_sale_schema.load(request.get_json())
     except ValidationError as err:
         return err.messages, 400
 

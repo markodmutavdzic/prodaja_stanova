@@ -44,8 +44,6 @@ class SearchUser(Schema):
 search_user_schema = SearchUser()
 
 
-
-
 class EditCurrentUser(Schema):
     first_name = fields.Str(validate=Length(max=50))
     last_name = fields.Str(validate=Length(max=50))
@@ -205,6 +203,17 @@ class EditApartmentCustomer(Schema):
 
 
 edit_apartment_customer_schema = EditApartmentCustomer()
+
+
+class EditApartmentCustomerForSale(Schema):
+    id = fields.Integer(required=True)
+    customer_status = fields.Str(validate=validate.OneOf(["POTECNCIJALNI", "REZERVISAO", "KUPIO"]))
+    customer_price = fields.Decimal()
+    note = fields.Str()
+    currency = fields.Str(validate=validate.OneOf(["EUR", "RSD"]))
+
+
+edit_apartment_customer_for_sale_schema = EditApartmentCustomerForSale()
 
 
 class CustomersForApartment(Schema):

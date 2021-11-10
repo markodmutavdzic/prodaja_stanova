@@ -153,9 +153,12 @@ def all_users():
     result = users_serialize(users)
     return jsonify({"users": result}), 200
 
-
+# @token_required
 @usr.route("/delete", methods=['POST'])
 def delete_user():
+    # if current_user.role is not enums.UserRole.ADMIN:
+    # return jsonify({"message": "User must be ADMIN"}), 400
+
     try:
         data = delete_schema.load(request.get_json())
     except ValidationError as err:
