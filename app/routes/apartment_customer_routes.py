@@ -3,9 +3,10 @@ from marshmallow import ValidationError
 
 from app import enums
 from app.marsh import new_apartment_customer_schema, edit_apartment_customer_schema, customers_for_apartment_schema, \
-    apartment_for_customer_schema, delete_schema, edit_apartment_customer_for_sale_schema
+    apartment_for_customer_schema, delete_schema, edit_apartment_customer_for_sale_schema, price_approved_schema
 from app.models import ApartmentCustomer, db, Customer, Apartment
-from app.serialize import customer_apartment_serialize, apartment_customer_serialize
+from app.serialize import customer_apartment_serialize, apartment_customer_serialize, price_for_approval_serialize, \
+    apartment_serialize, customer_serialize
 from app.token import token_required
 
 apc = Blueprint('apartment_customer', __name__, url_prefix='/apartment_customer')
@@ -16,7 +17,6 @@ def hello():
     return 'Zdravo, apartment_customer', 200
 
 
-# TODO logika za price approved
 @apc.route("/add", methods=['POST'])
 def add_apartment_customer():
     try:
@@ -29,7 +29,9 @@ def add_apartment_customer():
     if offer_exists:
         return jsonify({"message": "Offer from that costumer for that apartment already exists"}), 200
 
-    apartment = Apartment.query.filter(Apartment.id == data.get("apartment_id")).first()
+    apartment_lowest_price = Apartment.query.with_entities(Apartment.price) \
+        .filter(Apartment.id == data.get("apartment_id")).scalar()
+
     new_apartment_customer = ApartmentCustomer()
     new_apartment_customer.apartment_id = data.get("apartment_id")
     new_apartment_customer.customer_id = data.get("customer_id")
@@ -45,10 +47,10 @@ def add_apartment_customer():
     new_apartment_customer.contract_number = data.get("contract_number")
     new_apartment_customer.contract_date = data.get("contract_date")
     new_apartment_customer.customer_price = data.get("customer_price")
-    if new_apartment_customer.customer_price < apartment.lowest_price:
-        new_apartment_customer.price_approved = False
-    else:
+    if new_apartment_customer.customer_price >= apartment_lowest_price:
         new_apartment_customer.price_approved = True
+    else:
+        new_apartment_customer.price_approved = None
 
     db.session.add(new_apartment_customer)
     db.session.commit()
@@ -56,12 +58,11 @@ def add_apartment_customer():
     return jsonify({"message": "New offer created"}), 200
 
 
-# TODO logika za price approved
-# @token_required
 @apc.route("/edit", methods=['POST'])
+# @token_required
 def edit_apartment_customer():
-# def edit_apartment_customer(current_user):
-#     if current_user.role is not enums.UserRole.FINANSIJE:
+    # def edit_apartment_customer(current_user):
+    #     if current_user.role is not enums.UserRole.FINANSIJE:
     # return jsonify({"message": "User must be FINANSIJE"}), 400
     try:
         data = edit_apartment_customer_schema.load(request.get_json())
@@ -71,15 +72,13 @@ def edit_apartment_customer():
     apartment_customer = ApartmentCustomer.query.filter(ApartmentCustomer.id == data.get('id')).first()
     if not apartment_customer:
         return jsonify({"message": "Offer with that id doesnt exists"}), 400
-    # apartment_customer.update(data)
-    #
-    # db.session.commit()
 
-    apartment = Apartment.query.filter(Apartment.id == apartment_customer.apartment_id).first()
+    apartment_lowest_price = Apartment.query.with_entities(Apartment.price) \
+        .filter(Apartment.id == apartment_customer.apartment_id).scalar()
     if data.get("apartment_id"):
         apartment_customer.apartment_id = data.get("apartment_id")
     if data.get("customer_id"):
-        apartment_customer.customer_id =  data.get("customer_id")
+        apartment_customer.customer_id = data.get("customer_id")
     if data.get("customer_status"):
         apartment_customer.customer_status = data.get("customer_status")
     if data.get("note"):
@@ -104,11 +103,10 @@ def edit_apartment_customer():
         apartment_customer.contract_date = data.get("contract_date")
     if data.get("customer_price"):
         apartment_customer.customer_price = data.get("customer_price")
-    if data.get("currency"):
-        if apartment_customer.customer_price < apartment.lowest_price:
-            apartment_customer.price_approved = False
-        else:
+        if apartment_customer.customer_price >= apartment_lowest_price:
             apartment_customer.price_approved = True
+        else:
+            apartment_customer.price_approved = None
 
     db.session.commit()
 
@@ -122,10 +120,25 @@ def edit_apartment_customer_for_sale():
     except ValidationError as err:
         return err.messages, 400
 
-    apartment_customer = ApartmentCustomer.query.filter(ApartmentCustomer.id == data.get('id'))
+    apartment_customer = ApartmentCustomer.query.filter(ApartmentCustomer.id == data.get('id')).first()
     if not apartment_customer:
         return jsonify({"message": "Offer with that id doesnt exists"}), 400
-    apartment_customer.update(data)
+
+    apartment_lowest_price = Apartment.query.with_entities(Apartment.price) \
+        .filter(Apartment.id == apartment_customer.apartment_id).scalar()
+
+    if data.get("customer_price"):
+        apartment_customer.customer_price = data.get("customer_price")
+        if apartment_customer.customer_price >= apartment_lowest_price:
+            apartment_customer.price_approved = True
+        else:
+            apartment_customer.price_approved = None
+    if data.get("customer_status"):
+        apartment_customer.customer_status = data.get("customer_status")
+    if data.get("note"):
+        apartment_customer.note = data.get("note")
+    if data.get("currency"):
+        apartment_customer.currency = data.get("currency")
 
     db.session.commit()
 
@@ -139,13 +152,15 @@ def customers_for_apartment():
     except ValidationError as err:
         return err.messages, 400
 
-    customers_apartments = db.session.query(Customer, ApartmentCustomer)\
-        .join(ApartmentCustomer, ApartmentCustomer.customer_id == Customer.id).\
+    customers_apartments = db.session.query(Customer, ApartmentCustomer) \
+        .join(ApartmentCustomer, ApartmentCustomer.customer_id == Customer.id). \
         filter(ApartmentCustomer.apartment_id == data.get("apartment_id")).all()
 
+    apartment_db = Apartment.query.filter(Apartment.id == data.get("apartment_id")).first()
+    apartment = apartment_serialize(apartment_db)
     result = customer_apartment_serialize(customers_apartments)
 
-    return jsonify({"customers_for_apartment": result}), 200
+    return jsonify({"apartment": apartment}, {"customers_for_apartment": result}), 200
 
 
 @apc.route("/apartment_for_customer", methods=['POST'])
@@ -155,13 +170,15 @@ def apartment_for_customer():
     except ValidationError as err:
         return err.messages, 400
 
-    apartments_customer = db.session.query(Apartment, ApartmentCustomer)\
-        .join(ApartmentCustomer, ApartmentCustomer.apartment_id == Apartment.id).\
+    apartments_customer = db.session.query(Apartment, ApartmentCustomer) \
+        .join(ApartmentCustomer, ApartmentCustomer.apartment_id == Apartment.id). \
         filter(ApartmentCustomer.customer_id == data.get("customer_id")).all()
 
+    customer_db = Customer.query.filter(Customer.id == data.get("customer_id")).first()
+    customer = customer_serialize(customer_db)
     result = apartment_customer_serialize(apartments_customer)
 
-    return jsonify({"apartments_for_customer": result}), 200
+    return jsonify({"customer": customer}, {"apartments_for_customer": result}), 200
 
 
 @apc.route("/delete", methods=['POST'])
@@ -180,3 +197,52 @@ def delete_apartment_customer():
 
     return jsonify({"message": "Offer deleted"}), 200
 
+
+@apc.route("/price_for_approval")
+# @token_required
+def price_for_approval():
+    # def price_for_approval(current_user):
+    #     if current_user.role is not enums.UserRole.FINANSIJE:
+    # return jsonify({"message": "User must be FINANSIJE"}), 400
+
+
+    customers_apartments_price = db.session.query(Apartment, Customer, ApartmentCustomer) \
+        .join(Apartment, Apartment.id == ApartmentCustomer.apartment_id) \
+        .join(Customer, Customer.id == ApartmentCustomer.customer_id) \
+        .filter(ApartmentCustomer.price_approved.is_(None))\
+        .with_entities(ApartmentCustomer.id.label('offer_id'),
+                       Apartment.id.label('apartment_id'),
+                       Apartment.address.label('apartment_address'),
+                       Apartment.quadrature.label('apartment_quadrature'),
+                       Apartment.price.label('apartment_price'),
+                       Apartment.lowest_price.label('apartment_lowest_price'),
+                       ApartmentCustomer.price_approved.label('price_approved'),
+                       ApartmentCustomer.customer_price.label('apartment_customer_price'),
+                       Customer.id.label('customer_id'),
+                       Customer.name.label('customer_name')
+                       ).all()
+
+    result = price_for_approval_serialize(customers_apartments_price)
+
+    return jsonify({"message": result}), 200
+
+
+@apc.route("/price_approved", methods=['POST'])
+# @token_required
+def price_approved():
+    # def price_for_approval(current_user):
+    #     if current_user.role is not enums.UserRole.FINANSIJE:
+    # return jsonify({"message": "User must be FINANSIJE"}), 400
+
+    try:
+        data = price_approved_schema.load(request.get_json())
+    except ValidationError as err:
+        return err.messages, 400
+
+    offer_for_approval = ApartmentCustomer.query.filter(ApartmentCustomer.id == data.get('id')).first()
+
+    offer_for_approval.price_approved = data.get("price_approved")
+
+    db.session.commit()
+
+    return jsonify({"message": "Price approved"}), 200

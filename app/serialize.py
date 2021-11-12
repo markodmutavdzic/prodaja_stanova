@@ -120,3 +120,26 @@ def apartment_customer_serialize(apartments_customer):
         result.append(dict_to_append)
 
     return result
+
+
+def price_for_approval_serialize(customers_apartments_price):
+    result = []
+    for offer in customers_apartments_price:
+        dict_to_append = {
+            'apartment_customer_id': offer.offer_id,
+            'apartment_id': offer.apartment_id,
+            'apartment_address': offer.apartment_address,
+            'apartment_quadrature': offer.apartment_quadrature,
+            'apartment_price': offer.apartment_price,
+            'apartment_lowest_price': offer.apartment_lowest_price,
+            'apartment_customer_price': offer.apartment_customer_price,
+            'price_approved': offer.price_approved,
+            'customer_id': offer.customer_id,
+            'customer_name': offer.customer_name
+        }
+        result.append(dict_to_append)
+
+    return result
+
+
+

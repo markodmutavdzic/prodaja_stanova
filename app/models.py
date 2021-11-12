@@ -10,12 +10,11 @@ class User (db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
-    username = db.Column(db.String(50), nullable=False)
+    username = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(100), nullable=False)
     role = db.Column(db.Enum(UserRole), nullable=False)
 
 
-#TODO dodati slike
 class Apartment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     lamella = db.Column(db.String(50))
@@ -31,7 +30,7 @@ class Apartment(db.Model):
     new_construction = db.Column(db.Boolean, default=False)
     in_construction = db.Column(db.Boolean)
     available_from = db.Column(db.Date)
-    images = db.relationship("Image", back_populates='apartment')
+    images = db.relationship("Image", back_populates='apartment', cascade="all, delete-orphan")
 
 
 class Customer(db.Model):
@@ -40,7 +39,7 @@ class Customer(db.Model):
     name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(100), nullable=False)
     telephone_number = db.Column(db.String(100), nullable=False)
-    pib_jmbg = db.Column(db.String(50), nullable=False)
+    pib_jmbg = db.Column(db.String(50), nullable=False, unique=True)
     place = db.Column(db.String(100), nullable=False)
     street = db.Column(db.String(100), nullable=False)
     num = db.Column(db.String(100), nullable=False)
@@ -49,8 +48,8 @@ class Customer(db.Model):
 
 class ApartmentCustomer(db.Model):
     id = db.Column('id', db.Integer, primary_key=True)
-    apartment_id = db.Column(db.Integer,db.ForeignKey('apartment.id'))
-    customer_id = db.Column(db.Integer,db.ForeignKey('customer.id'))
+    apartment_id = db.Column(db.Integer, db.ForeignKey('apartment.id', ondelete='CASCADE'))
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id', ondelete='CASCADE'))
     customer_status = db.Column(db.Enum(CostumerStatus))
     customer_price = db.Column(db.DECIMAL)
     price_approved = db.Column(db.Boolean)
@@ -71,7 +70,7 @@ class Image(db.Model):
     file_name = db.Column(db.String, default=None)
     location = db.Column(db.String, nullable=False)
     url = db.Column(db.String, nullable=False)
-    apartment_id = db.Column(db.Integer, db.ForeignKey('apartment.id'))
+    apartment_id = db.Column(db.Integer, db.ForeignKey('apartment.id', ondelete='CASCADE'))
     apartment = db.relationship("Apartment", back_populates='images')
 
 

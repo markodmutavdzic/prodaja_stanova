@@ -83,6 +83,7 @@ class EditApartment(Schema):
     orientation = fields.Str(validate=validate.OneOf(["ISTOK", "ZAPAD", "SEVER", "JUG"]))
     num_terrace = fields.Integer()
     price = fields.Decimal()
+    lowest_price = fields.Decimal()
     status = fields.Str(validate=validate.OneOf(["SLOBODAN", "REZERVISAN", "PRODAT"]))
     new_construction = fields.Boolean()
     in_construction = fields.Boolean()
@@ -127,7 +128,6 @@ class NewCustomer(Schema):
     place = fields.Str(required=True, validate=Length(max=100))
     street = fields.Str(required=True, validate=Length(max=100))
     num = fields.Str(required=True, validate=Length(max=100))
-    date_of_first_visit = fields.Date()
 
 
 new_customer_schema = NewCustomer()
@@ -143,7 +143,6 @@ class EditCustomer(Schema):
     place = fields.Str(validate=Length(max=100))
     street = fields.Str(validate=Length(max=100))
     num = fields.Str(validate=Length(max=100))
-    date_of_first_visit = fields.Date()
 
 
 edit_customer_schema = EditCustomer()
@@ -239,3 +238,19 @@ class Delete(Schema):
 
 
 delete_schema = Delete()
+
+
+class PriceApproved(Schema):
+    id = fields.Integer(required=True)
+    price_approved = fields.Boolean(required=True)
+
+
+price_approved_schema = PriceApproved()
+
+
+class ImagesDelete(Schema):
+    apartment_id = fields.Integer(required=True)
+    urls = fields.List(cls_or_instance=fields.Str())
+
+
+images_delete_schema = ImagesDelete()

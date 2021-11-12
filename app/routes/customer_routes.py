@@ -1,3 +1,5 @@
+from datetime import date
+
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
 
@@ -21,6 +23,11 @@ def add_customer():
     except ValidationError as err:
         return err.messages, 400
 
+    if data.get('pib_jmbg'):
+        customer_exists = Customer.query.filter(Customer.pib_jmbg == data.get('pib_jmbg')).first()
+        if customer_exists:
+            return jsonify({"message": "Customer with that pib_jmbg already exists"})
+
     new_customer = Customer()
     new_customer.legal_entity = data.get("legal_entity")
     new_customer.name = data.get("name")
@@ -30,7 +37,7 @@ def add_customer():
     new_customer.place = data.get("place")
     new_customer.street = data.get("street")
     new_customer.num = data.get("num")
-    new_customer.date_of_first_visit = data.get("date_of_first_visit")
+    new_customer.date_of_first_visit = date.today()
 
     db.session.add(new_customer)
     db.session.commit()
@@ -49,7 +56,11 @@ def edit_customer():
     customer = Customer.query.filter(Customer.id == data.get('id')).first()
     if not customer:
         return jsonify({"message": "Customer with that id doesnt exists."}), 400
-
+    if data.get('pib_jmbg'):
+        customer_exists = Customer.query.filter(Customer.pib_jmbg == data.get('pib_jmbg'))
+        if customer_exists:
+            return jsonify({"message": "Customer with that pib_jmbg already exists"})
+        customer.pib_jmbg = data.get('pib_jmbg')
     if data.get('legal_entity'):
         customer.legal_entity = data.get('legal_entity')
     if data.get('name'):
@@ -58,16 +69,12 @@ def edit_customer():
         customer.email = data.get('email')
     if data.get('telephone_number'):
         customer.telephone_number = data.get('telephone_number')
-    if data.get('pib_jmbg'):
-        customer.pib_jmbg = data.get('pib_jmbg')
     if data.get('place'):
         customer.place = data.get('place')
     if data.get('street'):
         customer.street = data.get('street')
     if data.get('num'):
         customer.num = data.get('num')
-    if data.get('date_of_first_visit'):
-        customer.date_of_first_visit = data.get('date_of_first_visit')
 
     db.session.commit()
 
