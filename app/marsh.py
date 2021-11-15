@@ -262,3 +262,13 @@ class Id(Schema):
 
 
 id_schema = Id()
+
+class Report(Schema):
+
+    date_from = fields.Date()
+    date_to = fields.Date()
+
+
+report_schema = Report()
+
+
