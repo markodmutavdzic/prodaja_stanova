@@ -1,4 +1,5 @@
 import os
+from datetime import date
 
 from flask import Blueprint, jsonify, request, current_app
 from marshmallow import ValidationError
@@ -45,6 +46,7 @@ def add_apartment():
     new_apartment.in_construction = data.get('in_construction')
     new_apartment.available_from = data.get('available_from')
     new_apartment.lowest_price = data.get('lowest_price')
+    new_apartment.date_created = date.today()
 
     db.session.add(new_apartment)
     db.session.commit()
@@ -127,6 +129,10 @@ def edit_apartment():
         apartment.price = data.get('price')
     if data.get('status'):
         apartment.status = data.get('status')
+        if apartment.status == enums.Status.REZERVISAN:
+            apartment.date_reserved = date.today()
+        elif apartment.status == enums.Status.PRODAT:
+            apartment.date_sold = date.today()
     if data.get('new_construction'):
         apartment.new_construction = data.get('new_construction')
     if data.get('in_construction'):

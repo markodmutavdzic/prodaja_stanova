@@ -4,6 +4,7 @@ from app.models import db
 from app.routes.apartment_customer_routes import apc
 from app.routes.apartment_routes import apa
 from app.routes.customer_routes import cus
+from app.routes.report_routes import rep
 from app.routes.user_routes import usr
 
 migrate = Migrate()
@@ -15,6 +16,7 @@ def create_app():
     app.register_blueprint(apa)
     app.register_blueprint(cus)
     app.register_blueprint(apc)
+    app.register_blueprint(rep)
     app.config.from_json('../config.json')
 
     db.init_app(app)

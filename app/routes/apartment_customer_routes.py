@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from flask import Blueprint, request, jsonify, current_app
 from marshmallow import ValidationError
@@ -33,8 +33,8 @@ def add_apartment_customer():
     if offer_exists:
         return jsonify({"message": "Offer from that costumer for that apartment already exists"}), 200
 
-    apartment_lowest_price = Apartment.query.with_entities(Apartment.price) \
-        .filter(Apartment.id == data.get("apartment_id")).scalar()
+    apartment = Apartment.query.with_entities(Apartment.price) \
+        .filter(Apartment.id == data.get("apartment_id")).first()
 
     new_apartment_customer = ApartmentCustomer()
     new_apartment_customer.apartment_id = data.get("apartment_id")
@@ -51,10 +51,20 @@ def add_apartment_customer():
     new_apartment_customer.contract_number = data.get("contract_number")
     new_apartment_customer.contract_date = data.get("contract_date")
     new_apartment_customer.customer_price = data.get("customer_price")
-    if new_apartment_customer.customer_price >= apartment_lowest_price:
+    if new_apartment_customer.customer_price >= apartment.get('lowest_price'):
         new_apartment_customer.price_approved = True
     else:
         new_apartment_customer.price_approved = None
+
+    if new_apartment_customer.customer_status == enums.CostumerStatus.REZERVISAO:
+        apartment.status = enums.Status.REZERVISAN
+        apartment.date_reserved = date.today()
+    elif new_apartment_customer.customer_status == enums.CostumerStatus.KUPIO:
+        if new_apartment_customer.price_approved is True:
+            apartment.status = enums.Status.PRODAT
+            apartment.date_sold = date.today()
+        elif new_apartment_customer.price_approved is not True:
+            return jsonify({'message': 'Price must be approved'})
 
     db.session.add(new_apartment_customer)
     db.session.commit()
@@ -77,14 +87,24 @@ def edit_apartment_customer():
     if not apartment_customer:
         return jsonify({"message": "Offer with that id doesnt exists"}), 400
 
-    apartment_lowest_price = Apartment.query.with_entities(Apartment.price) \
-        .filter(Apartment.id == apartment_customer.apartment_id).scalar()
+    apartment = Apartment.query.with_entities(Apartment.price) \
+        .filter(Apartment.id == apartment_customer.apartment_id).first()
+
     if data.get("apartment_id"):
         apartment_customer.apartment_id = data.get("apartment_id")
     if data.get("customer_id"):
         apartment_customer.customer_id = data.get("customer_id")
     if data.get("customer_status"):
         apartment_customer.customer_status = data.get("customer_status")
+        if apartment_customer.customer_status == enums.CostumerStatus.REZERVISAO:
+            apartment.status = enums.Status.REZERVISAN
+            apartment.date_reserved = date.today()
+        elif apartment_customer.customer_status == enums.CostumerStatus.KUPIO:
+            if apartment_customer.price_approved is True:
+                apartment.status = enums.Status.PRODAT
+                apartment.date_sold = date.today()
+            elif apartment_customer.price_approved is not True:
+                return jsonify({'message': 'Price must be approved'})
     if data.get("note"):
         apartment_customer.note = data.get("note")
     if data.get("currency"):
@@ -107,7 +127,7 @@ def edit_apartment_customer():
         apartment_customer.contract_date = data.get("contract_date")
     if data.get("customer_price"):
         apartment_customer.customer_price = data.get("customer_price")
-        if apartment_customer.customer_price >= apartment_lowest_price:
+        if apartment_customer.customer_price >= apartment.get('lowest_price'):
             apartment_customer.price_approved = True
         else:
             apartment_customer.price_approved = None
@@ -128,17 +148,26 @@ def edit_apartment_customer_for_sale():
     if not apartment_customer:
         return jsonify({"message": "Offer with that id doesnt exists"}), 400
 
-    apartment_lowest_price = Apartment.query.with_entities(Apartment.price) \
-        .filter(Apartment.id == apartment_customer.apartment_id).scalar()
+    apartment = Apartment.query.with_entities(Apartment.price) \
+        .filter(Apartment.id == apartment_customer.apartment_id).first()
 
     if data.get("customer_price"):
         apartment_customer.customer_price = data.get("customer_price")
-        if apartment_customer.customer_price >= apartment_lowest_price:
+        if apartment_customer.customer_price >= apartment.get('lowest_price'):
             apartment_customer.price_approved = True
         else:
             apartment_customer.price_approved = None
     if data.get("customer_status"):
         apartment_customer.customer_status = data.get("customer_status")
+        if apartment_customer.customer_status == enums.CostumerStatus.REZERVISAO:
+            apartment.status = enums.Status.REZERVISAN
+            apartment.date_reserved = date.today()
+        elif apartment_customer.customer_status == enums.CostumerStatus.KUPIO:
+            if apartment_customer.price_approved is True:
+                apartment.status = enums.Status.PRODAT
+                apartment.date_sold = date.today()
+            elif apartment_customer.price_approved is not True:
+                return jsonify({'message': 'Price must be approved'})
     if data.get("note"):
         apartment_customer.note = data.get("note")
     if data.get("currency"):
