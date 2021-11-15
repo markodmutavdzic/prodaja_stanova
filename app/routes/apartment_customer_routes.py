@@ -245,7 +245,6 @@ def price_approved():
     offer_for_approval = ApartmentCustomer.query.filter(ApartmentCustomer.id == data.get('id')).first()
 
     offer_for_approval.price_approved = data.get("price_approved")
-
     db.session.commit()
 
     return jsonify({"message": "Price approved"}), 200
