@@ -254,3 +254,11 @@ class ImagesDelete(Schema):
 
 
 images_delete_schema = ImagesDelete()
+
+
+class Id(Schema):
+
+    id = fields.Integer(required=True)
+
+
+id_schema = Id()

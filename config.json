@@ -2,5 +2,8 @@
   "SECRET_KEY" : "prodaja_stanova",
   "SQLALCHEMY_DATABASE_URI" : "postgresql://postgres:0147@localhost:5432/prodaja_stanova",
   "SQLALCHEMY_TRACK_MODIFICATIONS" : "False",
-  "UPLOAD_DIR" : "/home/marko/Projekti/prodaja_stanova/static/uploads"
+  "UPLOAD_DIR" : "/home/marko/Projekti/prodaja_stanova/static/uploads",
+  "CONTRACT_TEMPLATE_DIR" : "/home/marko/Projekti/prodaja_stanova/static/template_ugovora",
+  "CONTRACT_TEMPLATE" : "Tempalte_ugovora.docx",
+  "CONTRACT_DIR" : "/home/marko/Projekti/prodaja_stanova/static/ugovori"
 }

@@ -1,6 +1,8 @@
-from flask import Blueprint, request, jsonify
-from marshmallow import ValidationError
+from datetime import datetime
 
+from flask import Blueprint, request, jsonify, current_app
+from marshmallow import ValidationError
+from docxtpl import DocxTemplate
 from app import enums
 from app.marsh import new_apartment_customer_schema, edit_apartment_customer_schema, customers_for_apartment_schema, \
     apartment_for_customer_schema, delete_schema, edit_apartment_customer_for_sale_schema, price_approved_schema
@@ -8,6 +10,8 @@ from app.models import ApartmentCustomer, db, Customer, Apartment
 from app.serialize import customer_apartment_serialize, apartment_customer_serialize, price_for_approval_serialize, \
     apartment_serialize, customer_serialize
 from app.token import token_required
+from num2words import num2words
+import requests
 
 apc = Blueprint('apartment_customer', __name__, url_prefix='/apartment_customer')
 
@@ -205,11 +209,10 @@ def price_for_approval():
     #     if current_user.role is not enums.UserRole.FINANSIJE:
     # return jsonify({"message": "User must be FINANSIJE"}), 400
 
-
     customers_apartments_price = db.session.query(Apartment, Customer, ApartmentCustomer) \
         .join(Apartment, Apartment.id == ApartmentCustomer.apartment_id) \
         .join(Customer, Customer.id == ApartmentCustomer.customer_id) \
-        .filter(ApartmentCustomer.price_approved.is_(None))\
+        .filter(ApartmentCustomer.price_approved.is_(None)) \
         .with_entities(ApartmentCustomer.id.label('offer_id'),
                        Apartment.id.label('apartment_id'),
                        Apartment.address.label('apartment_address'),
@@ -246,3 +249,70 @@ def price_approved():
     db.session.commit()
 
     return jsonify({"message": "Price approved"}), 200
+
+
+@apc.route('/generate_contract', methods=["POST"])
+# @token_required
+def generate_contract():
+    # def generate_contract(current_user):
+    # if current_user.role is not enums.UserRole.FINANSIJE:
+    # return jsonify({"message": "User must be FINANSIJE"}), 400
+
+    try:
+        data = delete_schema.load(request.get_json())
+    except ValidationError as err:
+        return err.messages, 400
+
+    contract_data = db.session.query(Apartment, Customer, ApartmentCustomer) \
+        .join(Apartment, Apartment.id == ApartmentCustomer.apartment_id) \
+        .join(Customer, Customer.id == ApartmentCustomer.customer_id) \
+        .filter(ApartmentCustomer.id == data.get('id')) \
+        .with_entities(ApartmentCustomer.contract_number.label('contract_number'),
+                       ApartmentCustomer.contract_date.label('contract_date'),
+                       ApartmentCustomer.customer_price.label('price'),
+                       ApartmentCustomer.currency.label('currency'),
+                       Customer.name.label('name'),
+                       Customer.place.label('place'),
+                       Customer.street.label('street'),
+                       Customer.num.label('num'),
+                       Apartment.address.label('address'),
+                       Apartment.quadrature.label('quadrature')
+                       ).first()
+
+    for data in contract_data:
+        if data is None:
+            return jsonify({"message": "Please fill all necessary data"}), 400
+
+    if contract_data.currency == enums.Currency.EUR:
+        response = requests.get('https://kurs.resenje.org/api/v1/currencies/eur/rates/today')
+        exchange_rate = response.json().get('exchange_middle')
+        price_rsd = float(contract_data.price) * exchange_rate
+    else:
+        price_rsd = contract_data.price
+    price_rsd_in_words = num2words(price_rsd, lang='sr')
+
+    date = datetime.strptime(str(contract_data.contract_date), '%Y-%m-%d').strftime('%d.%m.%Y.')
+
+    doc = DocxTemplate(
+        current_app.config.get("CONTRACT_TEMPLATE_DIR") + "/" + current_app.config.get("CONTRACT_TEMPLATE"))
+
+    context = {'contract_number': contract_data.contract_number,
+               'contract_date': date,
+               'name': contract_data.name,
+               'place': contract_data.place,
+               'street': contract_data.street,
+               'num': contract_data.num,
+               'address': contract_data.address,
+               'quadrature': contract_data.quadrature,
+               'price_rsd': price_rsd,
+               'price_rsd_in_words': price_rsd_in_words,
+               }
+
+    doc.render(context)
+
+    file_name = contract_data.address + '-' + str(contract_data.quadrature) + 'kvm'
+    doc.save(current_app.config.get("CONTRACT_DIR") +
+             '/' + file_name + '.docx')
+
+    message = "Contract with name " + file_name + " created"
+    return jsonify({"message": message}), 200
