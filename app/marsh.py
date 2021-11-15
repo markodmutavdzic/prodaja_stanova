@@ -263,6 +263,7 @@ class Id(Schema):
 
 id_schema = Id()
 
+
 class Report(Schema):
 
     date_from = fields.Date()
@@ -272,3 +273,11 @@ class Report(Schema):
 report_schema = Report()
 
 
+class CustomerReport(Schema):
+
+    date_from = fields.Date()
+    date_to = fields.Date()
+    id = fields.Integer(required=True)
+
+
+customer_report_schema = CustomerReport()

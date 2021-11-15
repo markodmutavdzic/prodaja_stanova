@@ -31,10 +31,13 @@ def add_apartment_customer():
     offer_exists = ApartmentCustomer.query.filter(ApartmentCustomer.apartment_id == data.get("apartment_id"),
                                                   ApartmentCustomer.customer_id == data.get("customer_id")).first()
     if offer_exists:
-        return jsonify({"message": "Offer from that costumer for that apartment already exists"}), 200
+        return jsonify({"message": "Offer from that costumer for that apartment already exists"}), 400
 
-    apartment = Apartment.query.with_entities(Apartment.price) \
-        .filter(Apartment.id == data.get("apartment_id")).first()
+    apartment = Apartment.query.filter(Apartment.id == data.get("apartment_id")).first()
+    if not apartment:
+        return jsonify({"message": "Apartment with that id doesnt exist"}), 400
+    if apartment.status == enums.Status.PRODAT:
+        return jsonify({"message": "Apartment is already sold"}), 400
 
     new_apartment_customer = ApartmentCustomer()
     new_apartment_customer.apartment_id = data.get("apartment_id")
@@ -51,7 +54,7 @@ def add_apartment_customer():
     new_apartment_customer.contract_number = data.get("contract_number")
     new_apartment_customer.contract_date = data.get("contract_date")
     new_apartment_customer.customer_price = data.get("customer_price")
-    if new_apartment_customer.customer_price >= apartment.get('lowest_price'):
+    if new_apartment_customer.customer_price >= apartment.lowest_price:
         new_apartment_customer.price_approved = True
     else:
         new_apartment_customer.price_approved = None
@@ -87,8 +90,11 @@ def edit_apartment_customer():
     if not apartment_customer:
         return jsonify({"message": "Offer with that id doesnt exists"}), 400
 
-    apartment = Apartment.query.with_entities(Apartment.price) \
-        .filter(Apartment.id == apartment_customer.apartment_id).first()
+    apartment = Apartment.query.filter(Apartment.id == apartment_customer.apartment_id).first()
+    if not apartment:
+        return jsonify({"message": "Apartment with that id doesnt exist"}), 400
+    if apartment.status == enums.Status.PRODAT:
+        return jsonify({"message": "Apartment is already sold"}), 400
 
     if data.get("apartment_id"):
         apartment_customer.apartment_id = data.get("apartment_id")
@@ -127,7 +133,7 @@ def edit_apartment_customer():
         apartment_customer.contract_date = data.get("contract_date")
     if data.get("customer_price"):
         apartment_customer.customer_price = data.get("customer_price")
-        if apartment_customer.customer_price >= apartment.get('lowest_price'):
+        if apartment_customer.customer_price >= apartment.lowest_price:
             apartment_customer.price_approved = True
         else:
             apartment_customer.price_approved = None
@@ -148,12 +154,15 @@ def edit_apartment_customer_for_sale():
     if not apartment_customer:
         return jsonify({"message": "Offer with that id doesnt exists"}), 400
 
-    apartment = Apartment.query.with_entities(Apartment.price) \
-        .filter(Apartment.id == apartment_customer.apartment_id).first()
+    apartment = Apartment.query.filter(Apartment.id == apartment_customer.apartment_id).first()
+    if not apartment:
+        return jsonify({"message": "Apartment with that id doesnt exist"}), 400
+    if apartment.status == enums.Status.PRODAT:
+        return jsonify({"message": "Apartment is already sold"}), 400
 
     if data.get("customer_price"):
         apartment_customer.customer_price = data.get("customer_price")
-        if apartment_customer.customer_price >= apartment.get('lowest_price'):
+        if apartment_customer.customer_price >= apartment.lowest_price:
             apartment_customer.price_approved = True
         else:
             apartment_customer.price_approved = None
