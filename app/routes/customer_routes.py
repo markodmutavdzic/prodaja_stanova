@@ -112,11 +112,14 @@ def all_customer():
         if data.get('date_of_first_visit_to'):
             customers = customers.filter(Customer.date_of_first_visit <= data.get('date_of_first_visit_to'))
 
-    customers = customers.all()
+    customers = customers.paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
-    result = customers_serialize(customers)
+    result = customers_serialize(customers.items)
 
-    return jsonify({'customers': result}), 200
+    return jsonify({"current page": customers.page,
+                    "next_page": customers.next_num,
+                    "perv_page": customers.prev_num},
+                   {'customers': result}), 200
 
 
 @cus.route('/delete', methods=['POST'])

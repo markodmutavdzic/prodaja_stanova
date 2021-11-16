@@ -39,7 +39,7 @@ class SearchUser(Schema):
     last_name = fields.Str(validate=Length(max=50))
     username = fields.Str(validate=Length(max=50))
     role = fields.Str(validate=validate.OneOf(['ADMIN', 'PRODAVAC', 'FINANSIJE']))
-
+    page_num = fields.Integer()
 
 search_user_schema = SearchUser()
 
@@ -114,7 +114,7 @@ class FilterApartment(Schema):
     available_from_to = fields.Date()
     order_id = fields.Str(validate=validate.OneOf(['ASC', 'DESC']))
     order_price = fields.Str(validate=validate.OneOf(['ASC', 'DESC']))
-
+    page_num = fields.Integer()
 
 filter_apartment_schema = FilterApartment()
 
@@ -159,7 +159,7 @@ class SearchCustomer(Schema):
     num = fields.Str(validate=Length(max=100))
     date_of_first_visit_from = fields.Date()
     date_of_first_visit_to = fields.Date()
-
+    page_num = fields.Integer()
 
 search_customer_schema = SearchCustomer()
 
@@ -219,6 +219,7 @@ edit_apartment_customer_for_sale_schema = EditApartmentCustomerForSale()
 class Id(Schema):
 
     id = fields.Integer(required=True)
+    page_num = fields.Integer()
 
 
 id_schema = Id()
@@ -254,6 +255,9 @@ class CustomerReport(Schema):
     date_from = fields.Date()
     date_to = fields.Date()
     id = fields.Integer(required=True)
+    page_num = fields.Integer()
 
 
 customer_report_schema = CustomerReport()
+
+

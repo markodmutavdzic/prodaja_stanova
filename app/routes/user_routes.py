@@ -149,10 +149,13 @@ def all_users():
     if data.get('role'):
         users = users.filter(User.role == (data.get('role')))
 
-    users = users.all()
+    users = users.paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
-    result = users_serialize(users)
-    return jsonify({'users': result}), 200
+    result = users_serialize(users.items)
+    return jsonify({"current page": users.page,
+                    "next_page": users.next_num,
+                    "perv_page": users.prev_num},
+                   {'users': result}), 200
 
 
 @usr.route('/delete', methods=['POST'])

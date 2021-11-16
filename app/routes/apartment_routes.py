@@ -204,11 +204,14 @@ def all_apartments():
             if data.get('order_price') == enums.Order.DESC:
                 apartments = apartments.order_by(Apartment.price.desc())
 
-    apartments = apartments.all()
+    apartments = apartments.paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
-    result = apartments_serialize(apartments)
+    result = apartments_serialize(apartments.items)
 
-    return jsonify({'apartments': result}), 200
+    return jsonify({"current page": apartments.page,
+                    "next_page": apartments.next_num,
+                    "perv_page": apartments.prev_num},
+                   {'apartments': result}), 200
 
 
 @apa.route('/delete', methods=['POST'])

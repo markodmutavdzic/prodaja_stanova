@@ -196,13 +196,18 @@ def customers_for_apartment():
 
     customers_apartments = db.session.query(Customer, ApartmentCustomer) \
         .join(ApartmentCustomer, ApartmentCustomer.customer_id == Customer.id). \
-        filter(ApartmentCustomer.apartment_id == data.get('apartment_id')).all()
+        filter(ApartmentCustomer.apartment_id == data.get('id'))\
+        .paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
-    apartment_db = Apartment.query.filter(Apartment.id == data.get('apartment_id')).first()
+    apartment_db = Apartment.query.filter(Apartment.id == data.get('id')).first()
     apartment = apartment_serialize(apartment_db)
-    result = customer_apartment_serialize(customers_apartments)
+    result = customer_apartment_serialize(customers_apartments.items)
 
-    return jsonify({'apartment': apartment}, {'customers_for_apartment': result}), 200
+    return jsonify({"current page": customers_apartments.page,
+                    "next_page": customers_apartments.next_num,
+                    "perv_page": customers_apartments.prev_num},
+                   {'apartment': apartment},
+                   {'customers_for_apartment': result}), 200
 
 
 @apc.route('/apartment_for_customer', methods=['POST'])
@@ -214,13 +219,18 @@ def apartment_for_customer():
 
     apartments_customer = db.session.query(Apartment, ApartmentCustomer) \
         .join(ApartmentCustomer, ApartmentCustomer.apartment_id == Apartment.id). \
-        filter(ApartmentCustomer.customer_id == data.get('customer_id')).all()
+        filter(ApartmentCustomer.customer_id == data.get('id'))\
+        .paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
-    customer_db = Customer.query.filter(Customer.id == data.get('customer_id')).first()
+    customer_db = Customer.query.filter(Customer.id == data.get('id')).first()
     customer = customer_serialize(customer_db)
-    result = apartment_customer_serialize(apartments_customer)
+    result = apartment_customer_serialize(apartments_customer.items)
 
-    return jsonify({'customer': customer}, {'apartments_for_customer': result}), 200
+    return jsonify({"current page": apartments_customer.page,
+                    "next_page": apartments_customer.next_num,
+                    "perv_page": apartments_customer.prev_num},
+                   {'customer': customer},
+                   {'apartments_for_customer': result}), 200
 
 
 @apc.route('/delete', methods=['POST'])

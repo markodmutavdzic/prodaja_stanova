@@ -6,8 +6,8 @@ from sqlalchemy import func
 
 from app import enums
 from app.marsh import report_schema, customer_report_schema
-from app.models import Apartment, ApartmentCustomer, db
-from app.serialize import apartment_customer_serialize
+from app.models import Apartment, ApartmentCustomer, db, Customer
+from app.serialize import apartment_customer_serialize, customer_serialize
 
 rep = Blueprint('report', __name__, url_prefix='/report')
 
@@ -95,11 +95,18 @@ def apartment_for_customer():
         .join(ApartmentCustomer, ApartmentCustomer.apartment_id == Apartment.id). \
         filter(ApartmentCustomer.customer_id == data.get('id'),
                ApartmentCustomer.customer_status == enums.CostumerStatus.POTENCIJALNI) \
-        .all()
+        .paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
-    result = apartment_customer_serialize(apartments_customer)
+    customer_db = Customer.query.filter(Customer.id == data.get('id')).first()
+    customer = customer_serialize(customer_db)
 
-    return jsonify({'apartments_for_customer': result}), 200
+    result = apartment_customer_serialize(apartments_customer.items)
+
+    return jsonify({"current page": apartments_customer.page,
+                    "next_page": apartments_customer.next_num,
+                    "perv_page": apartments_customer.prev_num},
+                   {'customer': customer},
+                   {'apartments_for_customer': result}), 200
 
 
 @rep.route('/apartments_customer_bought', methods=['POST'])
@@ -126,8 +133,11 @@ def apartments_customer_bought():
         apartments_customer = apartments_customer.filter(Apartment.date_sold > date_from,
                                                          Apartment.date_sold <= date_to)
 
-    apartments_customer = apartments_customer.all()
+    apartments_customer = apartments_customer.paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
     result = apartment_customer_serialize(apartments_customer)
 
-    return jsonify({'apartments_customer_bought': result}), 200
+    return jsonify({"current page": apartments_customer.page,
+                    "next_page": apartments_customer.next_num,
+                    "perv_page": apartments_customer.prev_num},
+                   {'apartments_customer_bought': result}), 200
