@@ -216,6 +216,21 @@ class EditApartmentCustomerForSale(Schema):
 edit_apartment_customer_for_sale_schema = EditApartmentCustomerForSale()
 
 
+class EditApartmentCustomerForContract(Schema):
+    id = fields.Integer(required=True)
+    payment_method = fields.Str(validate=validate.OneOf(['KES', 'KREDIT', 'MESOVITO']))
+    deposit_amount = fields.Decimal()
+    contract_deadline = fields.Date()
+    bank = fields.Str()
+    loan_amount = fields.Decimal()
+    cash_amount = fields.Decimal()
+    contract_number = fields.Str()
+    contract_date = fields.Date()
+
+edit_apartment_customer_for_contract_schema = EditApartmentCustomerForContract()
+
+
+
 class Id(Schema):
 
     id = fields.Integer(required=True)

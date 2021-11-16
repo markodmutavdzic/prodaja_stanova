@@ -56,6 +56,7 @@ class ApartmentCustomer(db.Model):
     customer_status = db.Column(db.Enum(CostumerStatus))
     customer_price = db.Column(db.DECIMAL)
     price_approved = db.Column(db.Boolean)
+    price_approval_by = db.Column(db.String(100))
     note = db.Column(db.Text())
     currency = db.Column(db.Enum(Currency))
     payment_method = db.Column(db.Enum(PaymentMethod))
