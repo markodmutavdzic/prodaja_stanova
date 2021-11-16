@@ -234,6 +234,7 @@ def edit_apartment_customer_for_contract():
     else:
         return jsonify({'message': 'Apartment must be sold'}), 200
 
+
 @apc.route('/customers_for_apartment', methods=['POST'])
 def customers_for_apartment():
     try:

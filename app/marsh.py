@@ -227,8 +227,8 @@ class EditApartmentCustomerForContract(Schema):
     contract_number = fields.Str()
     contract_date = fields.Date()
 
-edit_apartment_customer_for_contract_schema = EditApartmentCustomerForContract()
 
+edit_apartment_customer_for_contract_schema = EditApartmentCustomerForContract()
 
 
 class Id(Schema):
