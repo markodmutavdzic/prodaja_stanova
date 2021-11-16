@@ -5,7 +5,7 @@ from marshmallow import ValidationError
 from docxtpl import DocxTemplate
 from app import enums
 from app.marsh import new_apartment_customer_schema, edit_apartment_customer_schema, \
-    edit_apartment_customer_for_sale_schema, price_approved_schema, id_schema
+    edit_apartment_customer_for_sale_schema, price_approved_schema, id_schema, price_approval_schema
 from app.models import ApartmentCustomer, db, Customer, Apartment
 from app.serialize import customer_apartment_serialize, apartment_customer_serialize, price_for_approval_serialize, \
     apartment_serialize, customer_serialize
@@ -200,6 +200,8 @@ def customers_for_apartment():
         .paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
     apartment_db = Apartment.query.filter(Apartment.id == data.get('id')).first()
+    if not apartment_db:
+        return jsonify({'message': 'Apartment with that id doesnt exist'}), 400
     apartment = apartment_serialize(apartment_db)
     result = customer_apartment_serialize(customers_apartments.items)
 
@@ -223,6 +225,9 @@ def apartment_for_customer():
         .paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
     customer_db = Customer.query.filter(Customer.id == data.get('id')).first()
+    if not customer_db:
+        return jsonify({'message': 'Cutomer with that id doesnt exist'}), 400
+
     customer = customer_serialize(customer_db)
     result = apartment_customer_serialize(apartments_customer.items)
 
@@ -257,6 +262,11 @@ def price_for_approval():
     #     if current_user.role is not enums.UserRole.FINANSIJE:
     # return jsonify({'message': 'User must be FINANSIJE'}), 400
 
+    try:
+        data = price_approval_schema.load(request.get_json())
+    except ValidationError as err:
+        return err.messages, 400
+
     customers_apartments_price = db.session.query(Apartment, Customer, ApartmentCustomer) \
         .join(Apartment, Apartment.id == ApartmentCustomer.apartment_id) \
         .join(Customer, Customer.id == ApartmentCustomer.customer_id) \
@@ -271,11 +281,14 @@ def price_for_approval():
                        ApartmentCustomer.customer_price.label('apartment_customer_price'),
                        Customer.id.label('customer_id'),
                        Customer.name.label('customer_name')
-                       ).all()
+                       ).paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
-    result = price_for_approval_serialize(customers_apartments_price)
+    result = price_for_approval_serialize(customers_apartments_price.items)
 
-    return jsonify({'message': result}), 200
+    return jsonify({"current page": customers_apartments_price.page,
+                    "next_page": customers_apartments_price.next_num,
+                    "perv_page": customers_apartments_price.prev_num},
+                   {'price_for_approval': result}), 200
 
 
 @apc.route('/price_approved', methods=['POST'])
@@ -291,7 +304,8 @@ def price_approved():
         return err.messages, 400
 
     offer_for_approval = ApartmentCustomer.query.filter(ApartmentCustomer.id == data.get('id')).first()
-
+    if not offer_for_approval:
+        return jsonify({'message': 'Offer with that id doesnt exists.'}), 400
     offer_for_approval.price_approved = data.get('price_approved')
     db.session.commit()
 
@@ -338,13 +352,13 @@ def generate_contract():
         price_rsd = contract_data.price
     price_rsd_in_words = num2words(price_rsd, lang='sr')
 
-    date = datetime.strptime(str(contract_data.contract_date), '%Y-%m-%d').strftime('%d.%m.%Y.')
+    date_context = datetime.strptime(str(contract_data.contract_date), '%Y-%m-%d').strftime('%d.%m.%Y.')
 
     doc = DocxTemplate(
         current_app.config.get('CONTRACT_TEMPLATE_DIR') + '/' + current_app.config.get('CONTRACT_TEMPLATE'))
 
     context = {'contract_number': contract_data.contract_number,
-               'contract_date': date,
+               'contract_date': date_context,
                'name': contract_data.name,
                'place': contract_data.place,
                'street': contract_data.street,

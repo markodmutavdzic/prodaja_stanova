@@ -261,3 +261,9 @@ class CustomerReport(Schema):
 customer_report_schema = CustomerReport()
 
 
+class PriceApproval(Schema):
+
+    page_num = fields.Integer()
+
+
+price_approval_schema = PriceApproval()

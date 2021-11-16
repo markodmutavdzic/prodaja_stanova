@@ -91,13 +91,16 @@ def apartment_for_customer():
     except ValidationError as err:
         return err.messages, 400
 
+    customer_db = Customer.query.filter(Customer.id == data.get('id')).first()
+    if not customer_db:
+        return jsonify({'message': 'Customer with that id doesnt exists.'}), 400
+
     apartments_customer = db.session.query(Apartment, ApartmentCustomer) \
         .join(ApartmentCustomer, ApartmentCustomer.apartment_id == Apartment.id). \
         filter(ApartmentCustomer.customer_id == data.get('id'),
                ApartmentCustomer.customer_status == enums.CostumerStatus.POTENCIJALNI) \
         .paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
-    customer_db = Customer.query.filter(Customer.id == data.get('id')).first()
     customer = customer_serialize(customer_db)
 
     result = apartment_customer_serialize(apartments_customer.items)
@@ -124,6 +127,10 @@ def apartments_customer_bought():
     if date_to and not date_from:
         return {'message': 'Date from required'}, 400
 
+    customer_db = Customer.query.filter(Customer.id == data.get('id')).first()
+    if not customer_db:
+        return jsonify({'message': 'Customer with that id doesnt exists.'}), 400
+
     apartments_customer = db.session.query(Apartment, ApartmentCustomer) \
         .join(ApartmentCustomer, ApartmentCustomer.apartment_id == Apartment.id). \
         filter(ApartmentCustomer.customer_id == data.get('id'),
@@ -136,8 +143,9 @@ def apartments_customer_bought():
     apartments_customer = apartments_customer.paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
     result = apartment_customer_serialize(apartments_customer)
-
+    customer = customer_serialize(customer_db)
     return jsonify({"current page": apartments_customer.page,
                     "next_page": apartments_customer.next_num,
                     "perv_page": apartments_customer.prev_num},
+                   {'customer': customer},
                    {'apartments_customer_bought': result}), 200

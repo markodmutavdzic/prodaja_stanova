@@ -254,6 +254,8 @@ def delete_images():
 
     urls = data.get('urls')
     apartment = Apartment.query.filter(Apartment.id == data.get('apartment_id')).first()
+    if not apartment:
+        return jsonify({'message': 'Apartment with that id doesnt exists.'}), 400
     images = Image.query.filter(Image.url.in_(urls)).all()
 
     for image in images:
