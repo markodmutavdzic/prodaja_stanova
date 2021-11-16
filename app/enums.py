@@ -42,5 +42,5 @@ class PaymentMethod(str, enum.Enum):
     MESOVITO = 'MESOVITO'
 
 class Order(str, enum.Enum):
-    ASC = "ASC"
-    DESC = "DESC"
+    ASC = 'ASC'
+    DESC = 'DESC'

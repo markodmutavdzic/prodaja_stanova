@@ -33,7 +33,7 @@ class Apartment(db.Model):
     new_construction = db.Column(db.Boolean, default=False)
     in_construction = db.Column(db.Boolean)
     available_from = db.Column(db.Date)
-    images = db.relationship("Image", back_populates='apartment', cascade="all, delete-orphan")
+    images = db.relationship('Image', back_populates='apartment', cascade='all, delete-orphan')
 
 
 class Customer(db.Model):
@@ -74,7 +74,7 @@ class Image(db.Model):
     location = db.Column(db.String, nullable=False)
     url = db.Column(db.String, nullable=False)
     apartment_id = db.Column(db.Integer, db.ForeignKey('apartment.id', ondelete='CASCADE'))
-    apartment = db.relationship("Apartment", back_populates='images')
+    apartment = db.relationship('Apartment', back_populates='images')
 
 
 

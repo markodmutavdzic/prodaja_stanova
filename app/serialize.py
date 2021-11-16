@@ -1,12 +1,12 @@
 
 def user_serialize(user_db):
     user = {
-        "id": user_db.id,
-        "first_name": user_db.first_name,
-        "last_name": user_db.last_name,
-        "password": "",
-        "username": user_db.username,
-        "role": user_db.role
+        'id': user_db.id,
+        'first_name': user_db.first_name,
+        'last_name': user_db.last_name,
+        'password': '',
+        'username': user_db.username,
+        'role': user_db.role
     }
     return user
 
@@ -22,20 +22,20 @@ def users_serialize(users):
 def apartment_serialize(apartment_db):
     urls = [image.url for image in apartment_db.images]
     apartment = {
-        "id": apartment_db.id,
-        "lamella": apartment_db.lamella,
-        "address": apartment_db.address,
-        "quadrature": apartment_db.quadrature,
-        "floor": apartment_db.floor,
-        "num_rooms": apartment_db.num_rooms,
-        "orientation": apartment_db.orientation,
-        "num_terrace": apartment_db.num_terrace,
-        "price": apartment_db.price,
-        "status": apartment_db.status,
-        "new_construction": apartment_db.new_construction,
-        "in_construction": apartment_db.in_construction,
-        "available_from": str(apartment_db.available_from),
-        "images": urls
+        'id': apartment_db.id,
+        'lamella': apartment_db.lamella,
+        'address': apartment_db.address,
+        'quadrature': apartment_db.quadrature,
+        'floor': apartment_db.floor,
+        'num_rooms': apartment_db.num_rooms,
+        'orientation': apartment_db.orientation,
+        'num_terrace': apartment_db.num_terrace,
+        'price': apartment_db.price,
+        'status': apartment_db.status,
+        'new_construction': apartment_db.new_construction,
+        'in_construction': apartment_db.in_construction,
+        'available_from': str(apartment_db.available_from),
+        'images': urls
     }
     return apartment
 
@@ -50,16 +50,16 @@ def apartments_serialize(apartments):
 
 def customer_serialize(customer_db):
     customer = {
-        "id": customer_db.id,
-        "legal_entity": customer_db.legal_entity,
-        "name": customer_db.name,
-        "email": customer_db.email,
-        "telephone_number": customer_db.telephone_number,
-        "pib_jmbg": customer_db.pib_jmbg,
-        "place": customer_db.place,
-        "street": customer_db.street,
-        "num": customer_db.num,
-        "date_of_first_visit": str(customer_db.date_of_first_visit)
+        'id': customer_db.id,
+        'legal_entity': customer_db.legal_entity,
+        'name': customer_db.name,
+        'email': customer_db.email,
+        'telephone_number': customer_db.telephone_number,
+        'pib_jmbg': customer_db.pib_jmbg,
+        'place': customer_db.place,
+        'street': customer_db.street,
+        'num': customer_db.num,
+        'date_of_first_visit': str(customer_db.date_of_first_visit)
     }
     return customer
 
@@ -75,22 +75,22 @@ def customers_serialize(customers):
 
 def offer_serialize(offer):
     serialized_offer = {
-        "id": offer.id,
-        "apartment_id": offer.apartment_id,
-        "customer_id": offer.customer_id,
-        "customer_status": offer.customer_status,
-        "customer_price": offer.customer_price,
-        "price_approved": offer.price_approved,
-        "note": offer.note,
-        "currency": offer.currency,
-        "payment_method": offer.payment_method,
-        "deposit_amount": offer.deposit_amount,
-        "contract_deadline": offer.contract_deadline,
-        "bank": offer.bank,
-        "loan_amount": offer.loan_amount,
-        "cash_amount": offer.cash_amount,
-        "contract_number": offer.contract_number,
-        "contract_date": offer.contract_date
+        'id': offer.id,
+        'apartment_id': offer.apartment_id,
+        'customer_id': offer.customer_id,
+        'customer_status': offer.customer_status,
+        'customer_price': offer.customer_price,
+        'price_approved': offer.price_approved,
+        'note': offer.note,
+        'currency': offer.currency,
+        'payment_method': offer.payment_method,
+        'deposit_amount': offer.deposit_amount,
+        'contract_deadline': offer.contract_deadline,
+        'bank': offer.bank,
+        'loan_amount': offer.loan_amount,
+        'cash_amount': offer.cash_amount,
+        'contract_number': offer.contract_number,
+        'contract_date': offer.contract_date
     }
 
     return serialized_offer

@@ -22,9 +22,9 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
-    @app.route("/")
+    @app.route('/')
     def hello():
-        return "Zdravo, zdravo", 200
+        return 'Zdravo, zdravo', 200
 
 
     return app

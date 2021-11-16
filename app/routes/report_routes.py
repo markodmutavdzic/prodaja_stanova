@@ -12,12 +12,12 @@ from app.serialize import apartment_customer_serialize
 rep = Blueprint('report', __name__, url_prefix='/report')
 
 
-@rep.route("/")
+@rep.route(''/'')
 def hello():
     return 'Zdravo, report', 200
 
 
-@rep.route("/apartment_status", methods=['POST'])
+@rep.route('/apartment_status', methods=['POST'])
 def apartment_status_report():
     try:
         data = report_schema.load(request.get_json())
@@ -30,7 +30,7 @@ def apartment_status_report():
     if date_from and not date_to:
         date_to = date.today()
     if date_to and not date_from:
-        return {'message': "Date from required"}, 400
+        return {'message': 'Date from required'}, 400
 
     if not date_from and not date_to:
         available = Apartment.query.filter(Apartment.status == enums.Status.SLOBODAN).count()
@@ -51,7 +51,7 @@ def apartment_status_report():
     return jsonify({'slobodni': available, 'rezervisani': reserved, 'prodati': sold}), 200
 
 
-@rep.route("/apartments_sold", methods=['POST'])
+@rep.route('/apartments_sold', methods=['POST'])
 def apartments_sold():
     try:
         data = report_schema.load(request.get_json())
@@ -64,7 +64,7 @@ def apartments_sold():
     if date_from and not date_to:
         date_to = date.today()
     if date_to and not date_from:
-        return {'message': "Date from required"}, 400
+        return {'message': 'Date from required'}, 400
 
     apartments_sold_price = db.session.query(func.count(Apartment.id).label('num_of_apartment'),
                                              func.sum(Apartment.price).label('apartment_price'),
@@ -84,7 +84,7 @@ def apartments_sold():
                     'price_difference': price_difference}), 200
 
 
-@rep.route("/apartment_for_customer", methods=['POST'])
+@rep.route('/apartment_for_customer', methods=['POST'])
 def apartment_for_customer():
     try:
         data = customer_report_schema.load(request.get_json())
@@ -93,16 +93,16 @@ def apartment_for_customer():
 
     apartments_customer = db.session.query(Apartment, ApartmentCustomer) \
         .join(ApartmentCustomer, ApartmentCustomer.apartment_id == Apartment.id). \
-        filter(ApartmentCustomer.customer_id == data.get("id"),
+        filter(ApartmentCustomer.customer_id == data.get('id'),
                ApartmentCustomer.customer_status == enums.CostumerStatus.POTENCIJALNI) \
         .all()
 
     result = apartment_customer_serialize(apartments_customer)
 
-    return jsonify({"apartments_for_customer": result}), 200
+    return jsonify({'apartments_for_customer': result}), 200
 
 
-@rep.route("/apartments_customer_bought", methods=['POST'])
+@rep.route('/apartments_customer_bought', methods=['POST'])
 def apartments_customer_bought():
     try:
         data = customer_report_schema.load(request.get_json())
@@ -115,11 +115,11 @@ def apartments_customer_bought():
     if date_from and not date_to:
         date_to = date.today()
     if date_to and not date_from:
-        return {'message': "Date from required"}, 400
+        return {'message': 'Date from required'}, 400
 
     apartments_customer = db.session.query(Apartment, ApartmentCustomer) \
         .join(ApartmentCustomer, ApartmentCustomer.apartment_id == Apartment.id). \
-        filter(ApartmentCustomer.customer_id == data.get("id"),
+        filter(ApartmentCustomer.customer_id == data.get('id'),
                ApartmentCustomer.customer_status == enums.CostumerStatus.KUPIO) \
 
     if date_from and date_to:
@@ -130,4 +130,4 @@ def apartments_customer_bought():
 
     result = apartment_customer_serialize(apartments_customer)
 
-    return jsonify({"apartments_for_customer": result}), 200
+    return jsonify({'apartments_for_customer': result}), 200
