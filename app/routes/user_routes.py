@@ -6,7 +6,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import enums
 from app.marsh import new_user_schema, edit_user_schema, login_schema, edit_current_user_schema, search_user_schema, \
-    delete_schema
+    id_schema
+
 from app.models import db, User
 from app.token import token_required
 from app.serialize import users_serialize, user_serialize
@@ -153,14 +154,15 @@ def all_users():
     result = users_serialize(users)
     return jsonify({'users': result}), 200
 
-# @token_required
+
 @usr.route('/delete', methods=['POST'])
+# @token_required
 def delete_user():
     # if current_user.role is not enums.UserRole.ADMIN:
     # return jsonify({'message': 'User must be ADMIN'}), 400
 
     try:
-        data = delete_schema.load(request.get_json())
+        data = id_schema.load(request.get_json())
     except ValidationError as err:
         return err.messages, 400
 

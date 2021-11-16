@@ -12,7 +12,7 @@ from app.serialize import apartment_customer_serialize
 rep = Blueprint('report', __name__, url_prefix='/report')
 
 
-@rep.route(''/'')
+@rep.route('/')
 def hello():
     return 'Zdravo, report', 200
 
@@ -32,21 +32,21 @@ def apartment_status_report():
     if date_to and not date_from:
         return {'message': 'Date from required'}, 400
 
-    if not date_from and not date_to:
-        available = Apartment.query.filter(Apartment.status == enums.Status.SLOBODAN).count()
-        reserved = Apartment.query.filter(Apartment.status == enums.Status.REZERVISAN).count()
-        sold = Apartment.query.filter(Apartment.status == enums.Status.PRODAT).count()
+    available = Apartment.query.filter(Apartment.status == enums.Status.SLOBODAN)
+    reserved = Apartment.query.filter(Apartment.status == enums.Status.REZERVISAN)
+    sold = Apartment.query.filter(Apartment.status == enums.Status.PRODAT)
 
-    elif date_from and date_to:
-        available = Apartment.query.filter(Apartment.status == enums.Status.SLOBODAN,
-                                           Apartment.date_created > date_from,
-                                           Apartment.date_created <= date_to).count()
-        reserved = Apartment.query.filter(Apartment.status == enums.Status.REZERVISAN,
-                                          Apartment.date_reserved > date_from,
-                                          Apartment.date_reserved <= date_to).count()
-        sold = Apartment.query.filter(Apartment.status == enums.Status.PRODAT,
-                                      Apartment.date_sold > date_from,
-                                      Apartment.date_sold <= date_to).count()
+    if date_from and date_to:
+        available = available.filter(Apartment.date_created > date_from,
+                                     Apartment.date_created <= date_to)
+        reserved = reserved.filter(Apartment.date_reserved > date_from,
+                                   Apartment.date_reserved <= date_to)
+        sold = sold.filter(Apartment.date_sold > date_from,
+                           Apartment.date_sold <= date_to)
+
+    available = available.count()
+    reserved = reserved.count()
+    sold = sold.count()
 
     return jsonify({'slobodni': available, 'rezervisani': reserved, 'prodati': sold}), 200
 
@@ -120,7 +120,7 @@ def apartments_customer_bought():
     apartments_customer = db.session.query(Apartment, ApartmentCustomer) \
         .join(ApartmentCustomer, ApartmentCustomer.apartment_id == Apartment.id). \
         filter(ApartmentCustomer.customer_id == data.get('id'),
-               ApartmentCustomer.customer_status == enums.CostumerStatus.KUPIO) \
+               ApartmentCustomer.customer_status == enums.CostumerStatus.KUPIO)
 
     if date_from and date_to:
         apartments_customer = apartments_customer.filter(Apartment.date_sold > date_from,
@@ -130,4 +130,4 @@ def apartments_customer_bought():
 
     result = apartment_customer_serialize(apartments_customer)
 
-    return jsonify({'apartments_for_customer': result}), 200
+    return jsonify({'apartments_customer_bought': result}), 200

@@ -216,28 +216,12 @@ class EditApartmentCustomerForSale(Schema):
 edit_apartment_customer_for_sale_schema = EditApartmentCustomerForSale()
 
 
-class CustomersForApartment(Schema):
-
-    apartment_id = fields.Integer(required=True)
-
-
-customers_for_apartment_schema = CustomersForApartment()
-
-
-class ApartmentForCustomer(Schema):
-
-    customer_id = fields.Integer(required=True)
-
-
-apartment_for_customer_schema = ApartmentForCustomer()
-
-
-class Delete(Schema):
+class Id(Schema):
 
     id = fields.Integer(required=True)
 
 
-delete_schema = Delete()
+id_schema = Id()
 
 
 class PriceApproved(Schema):
@@ -254,14 +238,6 @@ class ImagesDelete(Schema):
 
 
 images_delete_schema = ImagesDelete()
-
-
-class Id(Schema):
-
-    id = fields.Integer(required=True)
-
-
-id_schema = Id()
 
 
 class Report(Schema):

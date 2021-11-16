@@ -5,8 +5,8 @@ from flask import Blueprint, jsonify, request, current_app
 from marshmallow import ValidationError
 
 from app import enums, db
-from app.marsh import new_apartment_schema, edit_apartment_schema, filter_apartment_schema, delete_schema, \
-     images_delete_schema
+from app.marsh import new_apartment_schema, edit_apartment_schema, filter_apartment_schema, \
+    images_delete_schema, id_schema
 from app.models import Apartment, Image
 from app.serialize import apartments_serialize
 from app.token import token_required
@@ -94,6 +94,7 @@ def upload_image():
         db.session.commit()
 
     return jsonify({'message': 'Images uploaded'}), 200
+
 
 @apa.route('/edit', methods=['POST'])
 # @token_required
@@ -218,7 +219,7 @@ def delete_apartment():
     #         return jsonify({'message': 'User must be ADMIN'}), 400
 
     try:
-        data = delete_schema.load(request.get_json())
+        data = id_schema.load(request.get_json())
     except ValidationError as err:
         return err.messages, 400
 
@@ -265,10 +266,7 @@ def delete_images():
         else:
             return jsonify({'message': 'The image does not exist.'}), 400
 
-
-
-
-    return ({'message': 'Images deleted'})
+    return jsonify({'message': 'Images deleted'})
 
 
 

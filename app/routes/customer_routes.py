@@ -3,7 +3,7 @@ from datetime import date
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
 
-from app.marsh import new_customer_schema, edit_customer_schema, search_customer_schema, delete_schema
+from app.marsh import new_customer_schema, edit_customer_schema, search_customer_schema, id_schema
 from app.models import Customer, db
 from app.serialize import customers_serialize
 
@@ -122,7 +122,7 @@ def all_customer():
 @cus.route('/delete', methods=['POST'])
 def delete_customer():
     try:
-        data = delete_schema.load(request.get_json())
+        data = id_schema.load(request.get_json())
     except ValidationError as err:
         return err.messages, 400
 
