@@ -140,6 +140,8 @@ def edit_apartment():
         apartment.in_construction = data.get('in_construction')
     if data.get('available_from'):
         apartment.available_from = data.get('available_from')
+    if data.get('lowest_price'):
+        apartment.lowest_price = data.get('lowest_price')
 
     db.session.commit()
 

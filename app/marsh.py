@@ -88,6 +88,7 @@ class EditApartment(Schema):
     new_construction = fields.Boolean()
     in_construction = fields.Boolean()
     available_from = fields.Date()
+    lowest_price = fields.Decimal()
 
 
 edit_apartment_schema = EditApartment()

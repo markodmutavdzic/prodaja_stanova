@@ -65,10 +65,11 @@ def add_new_user():
 
 
 @usr.route('/edit', methods=['POST'])
-@token_required
-def edit_user(current_user):
-    if current_user.role is not enums.UserRole.ADMIN:
-        return jsonify({'message': 'User must be ADMIN'}), 400
+# @token_required
+# def edit_user(current_user):
+def edit_user():
+    # if current_user.role is not enums.UserRole.ADMIN:
+    #     return jsonify({'message': 'User must be ADMIN'}), 400
 
     try:
         data = edit_user_schema.load(request.get_json())
