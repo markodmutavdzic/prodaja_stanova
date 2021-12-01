@@ -36,11 +36,11 @@ def login():
 
 
 @usr.route('/add', methods=['POST'])
-# @token_required
-# def add_new_user(current_user):
-def add_new_user():
-    # if current_user.role is not enums.UserRole.ADMIN:
-    #     return jsonify({'message': 'User must be ADMIN'}), 400
+@token_required
+def add_new_user(current_user):
+# def add_new_user():
+    if current_user.role is not enums.UserRole.ADMIN:
+        return jsonify({'message': 'User must be ADMIN'}), 400
 
     try:
         data = new_user_schema.load(request.get_json())
@@ -65,11 +65,11 @@ def add_new_user():
 
 
 @usr.route('/edit', methods=['POST'])
-# @token_required
-# def edit_user(current_user):
-def edit_user():
-    # if current_user.role is not enums.UserRole.ADMIN:
-    #     return jsonify({'message': 'User must be ADMIN'}), 400
+@token_required
+def edit_user(current_user):
+# def edit_user():
+    if current_user.role is not enums.UserRole.ADMIN:
+        return jsonify({'message': 'User must be ADMIN'}), 400
 
     try:
         data = edit_user_schema.load(request.get_json())
@@ -130,11 +130,11 @@ def edit_current_user(current_user):
 
 
 @usr.route('/all', methods=['POST'])
-# @token_required
-# def all_users(current_user):
-#     if current_user.role is not enums.UserRole.ADMIN:
-#         return jsonify({'message': 'User must be ADMIN'}), 400
-def all_users():
+@token_required
+def all_users(current_user):
+    if current_user.role is not enums.UserRole.ADMIN:
+        return jsonify({'message': 'User must be ADMIN'}), 400
+# def all_users():
     try:
         data = search_user_schema.load(request.get_json())
     except ValidationError as err:
@@ -160,10 +160,11 @@ def all_users():
 
 
 @usr.route('/delete', methods=['POST'])
-# @token_required
-def delete_user():
-    # if current_user.role is not enums.UserRole.ADMIN:
-    # return jsonify({'message': 'User must be ADMIN'}), 400
+@token_required
+# def delete_user():
+def delete_user(current_user):
+    if current_user.role is not enums.UserRole.ADMIN:
+        return jsonify({'message': 'User must be ADMIN'}), 400
 
     try:
         data = id_schema.load(request.get_json())

@@ -31,10 +31,6 @@ class CostumerStatus(str, enum.Enum):
     KUPIO = 'KUPIO'
 
 
-class Currency(str, enum.Enum):
-    EUR = 'EUR'
-    RSD = 'RSD'
-
 
 class PaymentMethod(str, enum.Enum):
     KES = 'KES'

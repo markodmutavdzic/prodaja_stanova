@@ -67,7 +67,6 @@ def upgrade():
     sa.Column('customer_price', sa.DECIMAL(), nullable=True),
     sa.Column('price_approved', sa.Boolean(), nullable=True),
     sa.Column('note', sa.Text(), nullable=True),
-    sa.Column('currency', sa.Enum('EUR', 'RSD', name='currency'), nullable=True),
     sa.Column('payment_method', sa.Enum('KES', 'KREDIT', 'MESOVITO', name='paymentmethod'), nullable=True),
     sa.Column('deposit_amount', sa.DECIMAL(), nullable=True),
     sa.Column('contract_deadline', sa.Date(), nullable=True),

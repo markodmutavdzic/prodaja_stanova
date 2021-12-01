@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 
 from app.enums import UserRole, Orientation, Status, LegalEntity,\
-    CostumerStatus, Currency, PaymentMethod
+    CostumerStatus, PaymentMethod
 
 db = SQLAlchemy()
 
@@ -58,7 +58,6 @@ class ApartmentCustomer(db.Model):
     price_approved = db.Column(db.Boolean)
     price_approval_by = db.Column(db.String(100))
     note = db.Column(db.Text())
-    currency = db.Column(db.Enum(Currency))
     payment_method = db.Column(db.Enum(PaymentMethod))
     deposit_amount = db.Column(db.DECIMAL)
     contract_deadline = db.Column(db.Date)

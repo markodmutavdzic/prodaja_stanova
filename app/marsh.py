@@ -171,7 +171,6 @@ class NewApartmentCustomer(Schema):
     customer_status = fields.Str(required=True, validate=validate.OneOf(['POTECNCIJALNI', 'REZERVISAO', 'KUPIO']))
     customer_price = fields.Decimal(required=True)
     note = fields.Str()
-    currency = fields.Str(required=True, validate=validate.OneOf(['EUR', 'RSD']))
     payment_method = fields.Str(validate=validate.OneOf(['KES', 'KREDIT', 'MESOVITO']))
     deposit_amount = fields.Decimal()
     contract_deadline = fields.Date()
@@ -192,7 +191,6 @@ class EditApartmentCustomer(Schema):
     customer_status = fields.Str(validate=validate.OneOf(['POTECNCIJALNI', 'REZERVISAO', 'KUPIO']))
     customer_price = fields.Decimal()
     note = fields.Str()
-    currency = fields.Str(validate=validate.OneOf(['EUR', 'RSD']))
     payment_method = fields.Str(validate=validate.OneOf(['KES', 'KREDIT', 'MESOVITO']))
     deposit_amount = fields.Decimal()
     contract_deadline = fields.Date()
@@ -211,7 +209,6 @@ class EditApartmentCustomerForSale(Schema):
     customer_status = fields.Str(validate=validate.OneOf(['POTECNCIJALNI', 'REZERVISAO', 'KUPIO']))
     customer_price = fields.Decimal()
     note = fields.Str()
-    currency = fields.Str(validate=validate.OneOf(['EUR', 'RSD']))
 
 
 edit_apartment_customer_for_sale_schema = EditApartmentCustomerForSale()

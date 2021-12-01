@@ -35,17 +35,19 @@ def add_apartment_customer():
         return jsonify({'message': 'Offer from that costumer for that apartment already exists'}), 400
 
     apartment = Apartment.query.filter(Apartment.id == data.get('apartment_id')).first()
+
     if not apartment:
         return jsonify({'message': 'Apartment with that id doesnt exist'}), 400
     if apartment.status == enums.Status.PRODAT:
         return jsonify({'message': 'Apartment is already sold'}), 400
-    contract_message = None
+    customer = Customer.query.filter(Customer.id == data.get('customer_id')).first()
+    if not customer:
+        return jsonify({'message': 'Customer with that id doesnt exist'}), 400
+    contract_message = ""
     new_apartment_customer = ApartmentCustomer()
     new_apartment_customer.apartment_id = data.get('apartment_id')
     new_apartment_customer.customer_id = data.get('customer_id')
-    new_apartment_customer.customer_status = data.get('customer_status')
     new_apartment_customer.note = data.get('note')
-    new_apartment_customer.currency = data.get('currency')
     new_apartment_customer.payment_method = data.get('payment_method')
     new_apartment_customer.deposit_amount = data.get('deposit_amount')
     new_apartment_customer.contract_deadline = data.get('contract_deadline')
@@ -55,35 +57,41 @@ def add_apartment_customer():
     new_apartment_customer.contract_number = data.get('contract_number')
     new_apartment_customer.contract_date = data.get('contract_date')
     new_apartment_customer.customer_price = data.get('customer_price')
+    new_apartment_customer.customer_status = data.get('customer_status')
     if new_apartment_customer.customer_price >= apartment.lowest_price:
         new_apartment_customer.price_approved = True
     else:
         new_apartment_customer.price_approved = None
 
+    db.session.add(new_apartment_customer)
+    db.session.flush()
+
     if new_apartment_customer.customer_status == enums.CostumerStatus.REZERVISAO:
         if new_apartment_customer.price_approved is True:
+            new_apartment_customer.customer_status = enums.CostumerStatus.REZERVISAO
             apartment.status = enums.Status.REZERVISAN
             apartment.date_reserved = date.today()
             contract_message = generate_contract(new_apartment_customer.id)
         elif new_apartment_customer.price_approved is not True:
-            return jsonify({'message': 'Price must be approved'})
+            new_apartment_customer.customer_status = enums.CostumerStatus.POTENCIJALNI
+            contract_message = 'Price must be approved, status is set to POTENCIJALNI'
     elif new_apartment_customer.customer_status == enums.CostumerStatus.KUPIO:
         apartment.status = enums.Status.PRODAT
         apartment.date_sold = date.today()
+        contract_message = generate_contract(new_apartment_customer.id)
 
-    db.session.add(new_apartment_customer)
     db.session.commit()
     if contract_message:
-        return jsonify({'message': 'New offer created', 'Contract created': contract_message}), 200
+        return jsonify({'Contract message': contract_message}), 200
     return jsonify({'message': 'New offer created'}), 200
 
 
 @apc.route('/edit', methods=['POST'])
-# @token_required
-def edit_apartment_customer():
-    # def edit_apartment_customer(current_user):
-    #     if current_user.role is not enums.UserRole.FINANSIJE:
-    # return jsonify({'message': 'User must be FINANSIJE'}), 400
+@token_required
+# def edit_apartment_customer():
+def edit_apartment_customer(current_user):
+    if current_user.role is not enums.UserRole.FINANSIJE:
+        return jsonify({'message': 'User must be FINANSIJE'}), 400
     try:
         data = edit_apartment_customer_schema.load(request.get_json())
     except ValidationError as err:
@@ -98,7 +106,12 @@ def edit_apartment_customer():
         return jsonify({'message': 'Apartment with that id doesnt exist'}), 400
     if apartment.status == enums.Status.PRODAT:
         return jsonify({'message': 'Apartment is already sold'}), 400
-    contract_message = None
+
+    customer = Customer.query.filter(Customer.id == apartment_customer.customer_id).first()
+    if not customer:
+        return jsonify({'message': 'Customer with that id doesnt exist'}), 400
+
+    contract_message = ''
     if data.get('apartment_id'):
         apartment_customer.apartment_id = data.get('apartment_id')
     if data.get('customer_id'):
@@ -117,14 +130,14 @@ def edit_apartment_customer():
                 apartment.date_reserved = date.today()
                 contract_message = generate_contract(apartment_customer.id)
             elif apartment_customer.price_approved is not True:
-                return jsonify({'message': 'Price must be approved'})
+                apartment_customer.customer_status = enums.CostumerStatus.POTENCIJALNI
+                contract_message = 'Price must be approved, status is set to POTENCIJALNI'
         elif apartment_customer.customer_status == enums.CostumerStatus.KUPIO:
             apartment.status = enums.Status.PRODAT
             apartment.date_sold = date.today()
+
     if data.get('note'):
         apartment_customer.note = data.get('note')
-    if data.get('currency'):
-        apartment_customer.currency = data.get('currency')
     if data.get('payment_method'):
         apartment_customer.payment_method = data.get('payment_method')
     if data.get('deposit_amount'):
@@ -145,12 +158,15 @@ def edit_apartment_customer():
     db.session.commit()
 
     if contract_message:
-        return jsonify({'message': 'New offer created', 'Contract created': contract_message}), 200
+        return jsonify({'Contract message': contract_message}), 200
     return jsonify({'message': 'Offer edited'}), 200
 
 
 @apc.route('/edit_for_sale', methods=['POST'])
-def edit_apartment_customer_for_sale():
+@token_required
+def edit_apartment_customer_for_sale(current_user):
+    if current_user.role is not enums.UserRole.PRODAVAC:
+        return jsonify({'message': 'User must be PRODAVAC'}), 400
     try:
         data = edit_apartment_customer_for_sale_schema.load(request.get_json())
     except ValidationError as err:
@@ -159,12 +175,16 @@ def edit_apartment_customer_for_sale():
     apartment_customer = ApartmentCustomer.query.filter(ApartmentCustomer.id == data.get('id')).first()
     if not apartment_customer:
         return jsonify({'message': 'Offer with that id doesnt exists'}), 400
-    contract_message = None
+    contract_message = ''
     apartment = Apartment.query.filter(Apartment.id == apartment_customer.apartment_id).first()
     if not apartment:
         return jsonify({'message': 'Apartment with that id doesnt exist'}), 400
     if apartment.status == enums.Status.PRODAT:
         return jsonify({'message': 'Apartment is already sold'}), 400
+
+    customer = Customer.query.filter(Customer.id == apartment_customer.customer_id).first()
+    if not customer:
+        return jsonify({'message': 'Customer with that id doesnt exist'}), 400
 
     if data.get('customer_price'):
         apartment_customer.customer_price = data.get('customer_price')
@@ -180,28 +200,27 @@ def edit_apartment_customer_for_sale():
                 apartment.date_reserved = date.today()
                 contract_message = generate_contract(apartment_customer.id)
             elif apartment_customer.price_approved is not True:
-                return jsonify({'message': 'Price must be approved'})
+                apartment_customer.customer_status = enums.CostumerStatus.POTENCIJALNI
+                contract_message = 'Price must be approved, status is set to POTENCIJALNI'
         elif apartment_customer.customer_status == enums.CostumerStatus.KUPIO:
             apartment.status = enums.Status.PRODAT
             apartment.date_sold = date.today()
     if data.get('note'):
         apartment_customer.note = data.get('note')
-    if data.get('currency'):
-        apartment_customer.currency = data.get('currency')
 
     db.session.commit()
 
     if contract_message:
-        return jsonify({'message': 'New offer created', 'Contract created': contract_message}), 200
+        return jsonify({'Contract message': contract_message}), 200
     return jsonify({'message': 'Offer edited'}), 200
 
 
 @apc.route('/edit_for_singed_contract', methods=['POST'])
-# @token_required
-def edit_apartment_customer_for_contract():
-    # def edit_apartment_customer(current_user):
-    #     if current_user.role is not enums.UserRole.FINANSIJE:
-    # return jsonify({'message': 'User must be FINANSIJE'}), 400
+@token_required
+# def edit_apartment_customer_for_contract():
+def edit_apartment_customer_for_contract(current_user):
+    if current_user.role is not enums.UserRole.FINANSIJE:
+        return jsonify({'message': 'User must be FINANSIJE'}), 400
     try:
         data = edit_apartment_customer_for_contract_schema.load(request.get_json())
     except ValidationError as err:
@@ -287,7 +306,10 @@ def apartment_for_customer():
 
 
 @apc.route('/delete', methods=['POST'])
-def delete_apartment_customer():
+@token_required
+def delete_apartment_customer(current_user):
+    if current_user.role is not enums.UserRole.FINANSIJE:
+        return jsonify({'message': 'User must be FINANSIJE'}), 400
     try:
         data = id_schema.load(request.get_json())
     except ValidationError as err:
@@ -304,11 +326,11 @@ def delete_apartment_customer():
 
 
 @apc.route('/price_for_approval')
-# @token_required
-def price_for_approval():
-    # def price_for_approval(current_user):
-    #     if current_user.role is not enums.UserRole.FINANSIJE:
-    # return jsonify({'message': 'User must be FINANSIJE'}), 400
+@token_required
+# def price_for_approval():
+def price_for_approval(current_user):
+    if current_user.role is not enums.UserRole.FINANSIJE:
+        return jsonify({'message': 'User must be FINANSIJE'}), 400
 
     try:
         data = price_approval_schema.load(request.get_json())
@@ -341,10 +363,10 @@ def price_for_approval():
 
 @apc.route('/price_approved', methods=['POST'])
 @token_required
-def price_approved():
-    # def price_approved(current_user):
-    #     if current_user.role is not enums.UserRole.FINANSIJE:
-    #         return jsonify({'message': 'User must be FINANSIJE'}), 400
+# def price_approved():
+def price_approved(current_user):
+    if current_user.role is not enums.UserRole.FINANSIJE:
+        return jsonify({'message': 'User must be FINANSIJE'}), 400
 
     try:
         data = price_approved_schema.load(request.get_json())
@@ -355,30 +377,21 @@ def price_approved():
     if not offer_for_approval:
         return jsonify({'message': 'Offer with that id doesnt exists.'}), 400
     offer_for_approval.price_approved = data.get('price_approved')
-    offer_for_approval.price_approval_by = "123 "  # current_user.first_name +' '+ current_user.last_name
+    offer_for_approval.price_approval_by = current_user.first_name +' '+ current_user.last_name
     db.session.commit()
 
     return jsonify({'message': 'Price approved'}), 200
 
 
-# @apc.route('/generate_contract', methods=['POST'])
-# @token_required
-def generate_contract(apartment_customer_id):
-    # def generate_contract(current_user):
-    # if current_user.role is not enums.UserRole.FINANSIJE:
-    # return jsonify({'message': 'User must be FINANSIJE'}), 400
 
-    # try:
-    #     data = id_schema.load(request.get_json())
-    # except ValidationError as err:
-    #     return err.messages, 400
+
+def generate_contract(apartment_customer_id):
 
     contract_data = db.session.query(Apartment, Customer, ApartmentCustomer) \
         .join(Apartment, Apartment.id == ApartmentCustomer.apartment_id) \
         .join(Customer, Customer.id == ApartmentCustomer.customer_id) \
         .filter(ApartmentCustomer.id == apartment_customer_id) \
         .with_entities(ApartmentCustomer.customer_price.label('price'),
-                       ApartmentCustomer.currency.label('currency'),
                        Customer.name.label('name'),
                        Customer.place.label('place'),
                        Customer.street.label('street'),
@@ -387,16 +400,10 @@ def generate_contract(apartment_customer_id):
                        Apartment.quadrature.label('quadrature')
                        ).first()
 
-    # for data in contract_data:
-    #     if data is None:
-    #         return jsonify({'message': 'Please fill all necessary data'}), 400
 
-    if contract_data.currency == enums.Currency.EUR:
-        response = requests.get('https://kurs.resenje.org/api/v1/currencies/eur/rates/today')
-        exchange_rate = response.json().get('exchange_middle')
-        price_rsd = float(contract_data.price) * exchange_rate
-    else:
-        price_rsd = contract_data.price
+    response = requests.get('https://kurs.resenje.org/api/v1/currencies/eur/rates/today')
+    exchange_rate = response.json().get('exchange_middle')
+    price_rsd = float(contract_data.price) * exchange_rate
     price_rsd_in_words = num2words(price_rsd, lang='sr')
 
     date_context = datetime.strptime(str(date.today()), '%Y-%m-%d').strftime('%d.%m.%Y.')
@@ -417,7 +424,7 @@ def generate_contract(apartment_customer_id):
 
     doc.render(context)
 
-    file_name = contract_data.address + '-' + str(contract_data.quadrature) + 'kvm'
+    file_name = contract_data.name + '-' + contract_data.address + '-' + str(contract_data.quadrature) + 'kvm'
     doc.save(current_app.config.get('CONTRACT_DIR') +
              '/' + file_name + '.docx')
 

@@ -32,17 +32,21 @@ def apartment_status_report():
     if date_to and not date_from:
         return {'message': 'Date from required'}, 400
 
-    available = Apartment.query.filter(Apartment.status == enums.Status.SLOBODAN)
-    reserved = Apartment.query.filter(Apartment.status == enums.Status.REZERVISAN)
-    sold = Apartment.query.filter(Apartment.status == enums.Status.PRODAT)
+    if not date_from and not date_to:
+        available = Apartment.query.filter(Apartment.status == enums.Status.SLOBODAN)
+        reserved = Apartment.query.filter(Apartment.status == enums.Status.REZERVISAN)
+        sold = Apartment.query.filter(Apartment.status == enums.Status.PRODAT)
 
     if date_from and date_to:
-        available = available.filter(Apartment.date_created > date_from,
-                                     Apartment.date_created <= date_to)
-        reserved = reserved.filter(Apartment.date_reserved > date_from,
-                                   Apartment.date_reserved <= date_to)
-        sold = sold.filter(Apartment.date_sold > date_from,
-                           Apartment.date_sold <= date_to)
+        available = Apartment.query.filter(Apartment.date_created >= date_from,
+                                           Apartment.date_created <= date_to,
+                                           (db.or_(Apartment.date_reserved.is_(None), Apartment.date_reserved > date_to)),
+                                           (db.or_(Apartment.date_sold.is_(None), Apartment.date_sold > date_to)))
+        reserved = Apartment.query.filter(Apartment.date_reserved >= date_from,
+                                          Apartment.date_reserved <= date_to,
+                                          (db.or_(Apartment.date_sold.is_(None), Apartment.date_sold > date_to)))
+        sold = Apartment.query.filter(Apartment.date_sold >= date_from,
+                                      Apartment.date_sold <= date_to)
 
     available = available.count()
     reserved = reserved.count()
@@ -74,14 +78,16 @@ def apartments_sold():
         .filter(Apartment.status == enums.Status.PRODAT)
 
     if date_from and date_to:
-        apartments_sold_price = apartments_sold_price.filter(Apartment.date_sold > date_from,
+        apartments_sold_price = apartments_sold_price.filter(Apartment.date_sold >= date_from,
                                                              Apartment.date_sold <= date_to)
 
     apartments_sold_price = apartments_sold_price.all()
-    price_difference = apartments_sold_price[0]['apartment_price'] - apartments_sold_price[0]['customer_price']
+    if apartments_sold_price[0]['apartment_price'] and apartments_sold_price[0]['customer_price']:
+        price_difference = apartments_sold_price[0]['apartment_price'] - apartments_sold_price[0]['customer_price']
 
-    return jsonify({'aprtments_sold': apartments_sold_price[0]['num_of_apartment'],
-                    'price_difference': price_difference}), 200
+        return jsonify({'aprtments_sold': apartments_sold_price[0]['num_of_apartment'],
+                        'price_difference': price_difference}), 200
+    return jsonify({'aprtments_sold': 'No apartments sold for that period'}), 200
 
 
 @rep.route('/apartment_for_customer', methods=['POST'])
@@ -142,7 +148,7 @@ def apartments_customer_bought():
 
     apartments_customer = apartments_customer.paginate(per_page=2, page=data.get('page_num'), error_out=True)
 
-    result = apartment_customer_serialize(apartments_customer)
+    result = apartment_customer_serialize(apartments_customer.items)
     customer = customer_serialize(customer_db)
     return jsonify({"current page": apartments_customer.page,
                     "next_page": apartments_customer.next_num,

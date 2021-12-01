@@ -21,11 +21,11 @@ def hello():
 
 
 @apa.route('/add', methods=['POST'])
-# @token_required
-# def add_apartment(current_user):
-def add_apartment():
-#     if current_user.role is not enums.UserRole.ADMIN:
-#         return jsonify({'message': 'User must be ADMIN'}), 400
+@token_required
+def add_apartment(current_user):
+# def add_apartment():
+    if current_user.role is not enums.UserRole.ADMIN:
+        return jsonify({'message': 'User must be ADMIN'}), 400
 
     try:
         data = new_apartment_schema.load(request.get_json())
@@ -97,11 +97,11 @@ def upload_image():
 
 
 @apa.route('/edit', methods=['POST'])
-# @token_required
-# def edit_apartment(current_user):
-def edit_apartment():
-#     if current_user.role is not enums.UserRole.ADMIN:
-#         return jsonify({'message': 'User must be ADMIN'}), 400
+@token_required
+def edit_apartment(current_user):
+# def edit_apartment():
+    if current_user.role is not enums.UserRole.ADMIN:
+        return jsonify({'message': 'User must be ADMIN'}), 400
 
     try:
         data = edit_apartment_schema.load(request.get_json())
@@ -217,11 +217,11 @@ def all_apartments():
 
 
 @apa.route('/delete', methods=['POST'])
-# @token_required
-def delete_apartment():
-# def delete_apartment(current_user):
-    # if current_user.role is not enums.UserRole.ADMIN:
-    #         return jsonify({'message': 'User must be ADMIN'}), 400
+@token_required
+# def delete_apartment():
+def delete_apartment(current_user):
+    if current_user.role is not enums.UserRole.ADMIN:
+            return jsonify({'message': 'User must be ADMIN'}), 400
 
     try:
         data = id_schema.load(request.get_json())
@@ -243,11 +243,11 @@ def delete_apartment():
 
 
 @apa.route('/delete_images', methods=['POST'])
-# @token_required
-def delete_images():
-# def delete_pictures(current_user):
-    # if current_user.role is not enums.UserRole.ADMIN:
-    #         return jsonify({'message': 'User must be ADMIN'}), 400
+@token_required
+# def delete_images():
+def delete_pictures(current_user):
+    if current_user.role is not enums.UserRole.ADMIN:
+            return jsonify({'message': 'User must be ADMIN'}), 400
 
     try:
         data = images_delete_schema.load(request.get_json())

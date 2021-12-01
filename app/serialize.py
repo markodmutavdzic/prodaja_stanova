@@ -82,7 +82,6 @@ def offer_serialize(offer):
         'customer_price': offer.customer_price,
         'price_approved': offer.price_approved,
         'note': offer.note,
-        'currency': offer.currency,
         'payment_method': offer.payment_method,
         'deposit_amount': offer.deposit_amount,
         'contract_deadline': offer.contract_deadline,
