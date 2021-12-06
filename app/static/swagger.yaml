@@ -1,59 +1,339 @@
 swagger: "2.0"
+
 info:
-  version: "1.0.0"
-  title: "Prodaja stanova"
+  title: Prodaja stanova
+  description: Aplikacija automatizuje poslove vezane za rad agencije za prodaju nekretnina
+  version: '1.0'
   contact:
-    email: "marko.mutavdzic@factoryww.rs"
+    name: Marko Mutavdzic
+    email: marko.mutavdzic@factoryww.com
+
 tags:
-- name: "User"
-  description: "User routes"
-- name: "Apartment"
-  description: "Apartment routes"
-- name: "Customer"
-  description: "Customer routes"
-- name: "Apartment Customer"
-  description: "Apartment customer routes"
-- name: "Report"
-  description: "Report routes"
+- name: User
+  description: Rute za rad sa korisnicima
+
+
+
 paths:
-  /useradd:
-    get:
+  /login:
+    post:
       tags:
-      - "User"
-      summary: "Dodavanje korisnika"
-      description: "Pozdravna test poruka"
+       - User
+      summary: Logovanje korisnika
+      operationId: login
+      description: Logovanje korisnika
       produces:
-      - "application/json"
-      responses:
-        "405":
-          description: "Invalid input"
-    put:
-      tags:
-      - "pet"
-      summary: "Update an existing pet"
-      description: ""
-      operationId: "updatePet"
+        - application/json
       consumes:
-      - "application/json"
-      - "application/xml"
-      produces:
-      - "application/xml"
-      - "application/json"
+        - application/json
       parameters:
-      - in: "body"
-        name: "body"
-        description: "Pet object that needs to be added to the store"
-        required: true
-        schema:
-          $ref: "#/definitions/Pet"
+        - in: body
+          name: data
+          description: Korisnicki kredencijali
+          required: true
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                example: mare
+              password:
+                type: string
+                example: 123
       responses:
-        "400":
-          description: "Invalid ID supplied"
-        "404":
-          description: "Pet not found"
-        "405":
-          description: "Validation exception"
+        200:
+          description:  Uspesno logovanje
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MiwiZXhwIjoxNjM2MDYxMDA1fQ.4-nVBmWm_he-w5gSr4oyAkJ8ZEgaE9os3LGcJtPYD0M
+              user:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example : 1
+                  first_name:
+                    type: string
+                    example: Marko
+                  last_name:
+                    type: string
+                    example : Mutavdzic
+                  password:
+                    type: string
+                    example: ''
+                  username:
+                    type: string
+                    example: mare
+                  role:
+                    type: string
+                    example: ADMIN
+        401:
+          description: "{'message': 'User with that username doesnt exist'}\n
+                        {'message': 'Invalid password'}"
+
+  /user/add:
+    post:
+      tags:
+       - User
+      summary: Dodavanje novih korisnika
+      operationId: addUser
+      description: Dodavanje novih korisnika, morate biti ulogovani kao ADMIN
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Podatci o novom korisniki
+          required: true
+          schema:
+            type: object
+            properties:
+              first_name:
+                type: string
+                example: Marko
+              last_name:
+                type: string
+                example: Mutavdzic
+              username:
+                type: string
+                example: mare
+              password:
+                type: string
+                example: 123
+              role:
+                type: string
+                example: ADMIN
+                enum:
+                    - "ADMIN"
+                    - "PRODAVAC"
+                    - "FINANSIJE"
+      responses:
+        200:
+          description:  "{'message': 'New user created.'}"
+        400:
+          description: "{'message': 'User must be ADMIN'}\n
+                        {'message': 'User with that username already exists.'}"
       security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
+        - JWT: []
+
+  /user/edit:
+    post:
+      tags:
+       - User
+      summary: Izmena podataka o korisicima
+      operationId: editUser
+      description: Izmena podataka o korisnicima, morate biti ulogovani kao ADMIN
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Podatci koje menjano kod korisnika
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              first_name:
+                type: string
+                example: Marko
+              last_name:
+                type: string
+                example: Mutavdzic
+              username:
+                type: string
+                example: Mare
+              password:
+                type: string
+                example: 123
+              role:
+                type: string
+                example: ADMIN
+                enum:
+                    - "ADMIN"
+                    - "PRODAVAC"
+                    - "FINANSIJE"
+      responses:
+        200:
+          description:  "{'message': 'User edited.'}"
+        400:
+          description: "{'message': 'User must be ADMIN'}\n
+                        {'message': 'User with that username already exists.'}\n
+                        {'message': 'User with that id doesnt exists.'}"
+      security:
+        - JWT: []
+
+  /user/edit_current:
+    post:
+      tags:
+       - User
+      summary: Izmena podataka trenutnom korisniku
+      operationId: ediCurrenttUser
+      description: Izmena podataka o trenutnom korisniku
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Podatci koje menjano kod korisnika
+          required: true
+          schema:
+            type: object
+            properties:
+              first_name:
+                type: string
+                example: Marko
+              last_name:
+                type: string
+                example: Mutavdzic
+              username:
+                type: string
+                example: mare
+              password:
+                type: string
+                example: 123
+      responses:
+        200:
+          description:  "{'message': 'User edited.'}"
+        400:
+          description: "{'message': 'User must be ADMIN'}"
+      security:
+        - JWT: []
+
+  /user/all:
+    post:
+      tags:
+       - User
+      summary: Svi korisnici
+      operationId: allUser
+      description: Pretraga svih korisnika
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unosimo samo parametre po kojim zelimo da filtriramo korisnike
+          required: true
+          schema:
+            type: object
+            properties:
+              first_name:
+                type: string
+                example: Marko
+              last_name:
+                type: string
+                example : Mutavdzic
+              username:
+                type: string
+                example: mare
+              role:
+                type: string
+                example: ADMIN
+                enum:
+                    - "ADMIN"
+                    - "PRODAVAC"
+                    - "FINANSIJE"
+              page_num:
+                type: integer
+                example: 1
+      responses:
+        200:
+          description: Korisnici
+          schema:
+            type: object
+            properties:
+              current page:
+                type: integer
+                example: 1
+              next_page:
+                type: integer
+                example: 2
+              perv_page:
+                type: integer
+                example:
+              users:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example : 1
+                  first_name:
+                    type: string
+                    example: Marko
+                  last_name:
+                    type: string
+                    example : Mutavdzic
+                  password:
+                    type: string
+                    example: ''
+                  username:
+                    type: string
+                    example: mare
+                  role:
+                    type: string
+                    example: ADMIN
+        400:
+          description: "{'message': 'User must be ADMIN'}"
+      security:
+        - JWT: []
+
+  /user/delete:
+    post:
+      tags:
+       - User
+      summary: Brisanje korisnika
+      operationId: deleteUser
+      description: Brisanje korisnika po ID-u, morate biti ulogovani kao ADMIN
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: ID korisnika
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+      responses:
+        200:
+          description:  "{'message': 'User deleted.'}"
+        400:
+          description: "{'message': 'User must be ADMIN'}\n
+                        {'message': 'User with that id doesnt exists.'}"
+      security:
+        - JWT: []
+
+
+
+
+# definitions:
+#   OkResponse:
+#       type: object
+#       properties:
+#         message:
+#           type: string
+
+
+securityDefinitions:
+  JWT:
+     type: apiKey
+     in: header
+     name: access-key
