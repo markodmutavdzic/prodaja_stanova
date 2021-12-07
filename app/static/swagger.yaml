@@ -11,6 +11,8 @@ info:
 tags:
 - name: User
   description: Rute za rad sa korisnicima
+- name: Apartment
+  description: Rute za rad sa stanovima
 
 
 
@@ -321,8 +323,414 @@ paths:
       security:
         - JWT: []
 
+  /apartment/add:
+    post:
+      tags:
+       - Apartment
+      summary: Dodavanje novih stanova
+      operationId: addApartment
+      description: Dodavanje novih korisnika, morate biti ulogovani kao ADMIN
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Podatci o novom stanu
+          required: true
+          schema:
+            type: object
+            properties:
+              lamella:
+                type: string
+                example: 4c
+              address:
+                type: string
+                example: Belo Vrelo 54
+              quadrature:
+                type: number
+                example: 75
+              floor:
+                type: integer
+                example: 4
+              num_rooms:
+                type: number
+                example: 4
+              orientation:
+                type: string
+                example: SEVER
+                enum:
+                    - "ISTOK"
+                    - "ZAPAD"
+                    - "SEVER"
+                    - "JUG"
+              num_terrace:
+                type: integer
+                example: 1
+              price:
+                type: number
+                example: 100000
+              lowest_price:
+                type: number
+                example: 95000
+              status:
+                type: string
+                example: SLOBODAN
+                enum:
+                    - "SLOBODAN"
+                    - "REZERVISAN"
+                    - "PRODAT"
+              new_construction:
+                type: boolean
+                example: false
+              in_construction:
+                type: boolean
+                example: false
+              available_from:
+                type: string
+                example: '2021-12-05'
+      responses:
+        200:
+          description:  "{'message': 'New apartment created.'}"
+        400:
+          description: "{'message': 'User must be ADMIN'}"
+      security:
+        - JWT: []
+
+  /apartment/upload_images:
+    post:
+      tags:
+       - Apartment
+      summary: Dodavanje slika
+      operationId: addApartmentPictures
+      description: Dodavanje slika za odredjeni stan
+      produces:
+        - application/json
+      consumes:
+        - application/x-www-form-urlencoded
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: id
+          type: string
+          description: ID stana kome se dodaju slike
+          required: true
+        - in: formData
+          name: images
+          type: file
+
+      responses:
+        200:
+          description:  "{'message': 'Images uploaded'}"
+        400:
+          description: "{'message': 'Apartment with that id doesnt exists.'}\n
+                       {'message': 'Wrong image type'}"
+
+  /apartment/edit:
+    post:
+      tags:
+       - Apartment
+      summary: Izmena podataka o stanu
+      operationId: editApartment
+      description: Izmena podataka o stanu, morate biti ulogovani kao ADMIN
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite samo podatke koje zelite da izmenite
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              lamella:
+                type: string
+                example: 4c
+              address:
+                type: string
+                example: Belo Vrelo 54
+              quadrature:
+                type: number
+                example: 75
+              floor:
+                type: integer
+                example: 4
+              num_rooms:
+                type: number
+                example: 4
+              orientation:
+                type: string
+                example: SEVER
+                enum:
+                    - "ISTOK"
+                    - "ZAPAD"
+                    - "SEVER"
+                    - "JUG"
+              num_terrace:
+                type: integer
+                example: 1
+              price:
+                type: number
+                example: 100000
+              lowest_price:
+                type: number
+                example: 95000
+              status:
+                type: string
+                example: SLOBODAN
+                enum:
+                    - "SLOBODAN"
+                    - "REZERVISAN"
+                    - "PRODAT"
+              new_construction:
+                type: boolean
+                example: false
+              in_construction:
+                type: boolean
+                example: false
+              available_from:
+                type: string
+                example: '2021-12-05'
+      responses:
+        200:
+          description:  "{'message': 'Apartment edited.'}"
+        400:
+          description: "{'message': 'User must be ADMIN'}\n
+                        {'message': 'Apartment with that id doesnt exists.'}"
+      security:
+        - JWT: []
 
 
+  /apartment/all:
+    post:
+      tags:
+       - Apartment
+      summary: Preged stanova
+      operationId: allApartment
+      description: Pregled, sortiranje i filtriranje stanova
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite podatke po kojima zelite da filtrirate stanove, mozete sotirati po ID-u i ceni
+          required: true
+          schema:
+            type: object
+            properties:
+              lamella:
+                type: string
+                example: 4c
+              address:
+                type: string
+                example: Belo Vrelo 54
+              quadrature_from:
+                type: number
+                example: 70
+              quadrature_to:
+                type: number
+                example: 75
+              floor_from:
+                type: integer
+                example: 4
+              floor_to:
+                type: integer
+                example: 4
+              num_rooms_from:
+                type: number
+                example: 3
+              num_rooms_to:
+                type: number
+                example: 4
+              orientation:
+                type: string
+                example: SEVER
+                enum:
+                    - "ISTOK"
+                    - "ZAPAD"
+                    - "SEVER"
+                    - "JUG"
+              num_terrace_from:
+                type: integer
+                example: 1
+              num_terrace_to:
+                type: integer
+                example: 2
+              price_from:
+                type: number
+                example: 90000
+              price_to:
+                type: number
+                example: 100000
+              status:
+                type: string
+                example: SLOBODAN
+                enum:
+                    - "SLOBODAN"
+                    - "REZERVISAN"
+                    - "PRODAT"
+              new_construction:
+                type: boolean
+                example: false
+              in_construction:
+                type: boolean
+                example: false
+              available_from_from:
+                type: string
+                example: '2021-12-05'
+              available_from_to:
+                type: string
+                example: '2021-12-30'
+              order_id:
+                type: string
+                example: ASC
+                enum:
+                    - "ASC"
+                    - "DESC"
+              order_price:
+                type: string
+                example: ASC
+                enum:
+                    - "ASC"
+                    - "DESC"
+              page_num:
+                type: integer
+                example: 1
+      responses:
+        200:
+          description: Stanovi
+          schema:
+            type: object
+            properties:
+              current page:
+                type: integer
+                example: 1
+              next_page:
+                type: integer
+                example: 2
+              perv_page:
+                type: integer
+                example:
+              apartments:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  lamella:
+                    type: string
+                    example: 4c
+                  address:
+                    type: string
+                    example: Belo Vrelo 54
+                  quadrature:
+                    type: number
+                    example: 75
+                  floor:
+                    type: integer
+                    example: 4
+                  num_rooms:
+                    type: number
+                    example: 4
+                  orientation:
+                    type: string
+                    example: SEVER
+                  num_terrace:
+                    type: integer
+                    example: 1
+                  price:
+                    type: number
+                    example: 100000
+                  status:
+                    type: string
+                    example: SLOBODAN
+                  new_construction:
+                    type: boolean
+                    example: false
+                  in_construction:
+                    type: boolean
+                    example: false
+                  available_from:
+                    type: string
+                    example: '2021-12-05'
+
+  /apartments/delete:
+    post:
+      tags:
+       - Apartment
+      summary: Brisanje stanova
+      operationId: deleteApartment
+      description: Brisanje stanova po ID-u, morate biti ulogovani kao ADMIN
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: ID stana
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+      responses:
+        200:
+          description:  "{'message': 'Apartment deleted'}"
+        400:
+          description: "{'message': 'User must be ADMIN'}\n
+                        {'message': 'Apartment with that id doesnt exists.'}"
+      security:
+        - JWT: []
+
+  /apartments/delete_images:
+    post:
+      tags:
+       - Apartment
+      summary: Brisanje slika
+      operationId: deleteApartmentPictures
+      description: Brisanje slika po ID-u stana u url-u, morate biti ulogovani kao ADMIN
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: ID stana
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              urls:
+                type: array
+                items:
+                  type: string
+                  example:
+                    - 5_dnevna_soba.jpg
+                    - 6_kuhinja.jpg
+      responses:
+        200:
+          description:  "{'message': 'Images deleted'}"
+        400:
+          description: "{'message': 'User must be ADMIN'}\n
+                        {'message': 'Apartment with that id doesnt exists.'}\n
+                        {'message': 'The image does not exist.'}"
+      security:
+        - JWT: []
 
 # definitions:
 #   OkResponse:
