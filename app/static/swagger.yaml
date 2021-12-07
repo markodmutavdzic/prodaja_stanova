@@ -13,6 +13,8 @@ tags:
   description: Rute za rad sa korisnicima
 - name: Apartment
   description: Rute za rad sa stanovima
+- name: Customer
+  description: Rute za rad sa kupcima
 
 
 
@@ -732,12 +734,245 @@ paths:
       security:
         - JWT: []
 
-# definitions:
-#   OkResponse:
-#       type: object
-#       properties:
-#         message:
-#           type: string
+  /customer/add:
+    post:
+      tags:
+       - Customer
+      summary: Dodavanje novih kupaca
+      operationId: addCustomer
+      description: Dodavanje novih kupaca
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Podatci o novom kupcu
+          required: true
+          schema:
+            type: object
+            properties:
+              legal_entity:
+                type: string
+                example: FIZICKO
+                enum:
+                    - "FIZICKO"
+                    - "PRAVNO"
+              name:
+                type: string
+                example: Marko Mutavdzic
+              email:
+                type: string
+                example: marko.mutavdzic@factoryww.com
+              telephone_number:
+                type: string
+                example: '0641470007'
+              pib_jmbg:
+                type: string
+                example: 1806983710075
+              place:
+                type: string
+                example: Beograd
+              street:
+                type: string
+                example: Belo Vrelo
+              num:
+                type: string
+                example: 54
+
+      responses:
+        200:
+          description:  "{'message': 'New customer created.'}"
+        400:
+          description: "{'message': 'Customer with that pib_jmbg already exists'}"
+
+  /customer/edit:
+    post:
+      tags:
+       - Customer
+      summary: Izmena podataka o kupcima
+      operationId: editCustomer
+      description: Izmena podataka o kupcima
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite samo podatke koje zelite da izmenite
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              legal_entity:
+                type: string
+                example: FIZICKO
+                enum:
+                    - "FIZICKO"
+                    - "PRAVNO"
+              name:
+                type: string
+                example: Marko Mutavdzic
+              email:
+                type: string
+                example: marko.mutavdzic@factoryww.com
+              telephone_number:
+                type: string
+                example: '0641470007'
+              pib_jmbg:
+                type: string
+                example: 1806983710075
+              place:
+                type: string
+                example: Beograd
+              street:
+                type: string
+                example: Belo Vrelo
+              num:
+                type: string
+                example: 54
+
+      responses:
+        200:
+          description:  "{'message': 'Customer edited.'}"
+        400:
+          description: "{'message': 'Customer with that id doesnt exists.'}\n
+                        {'message': 'Customer with that pib_jmbg already exists'}"
+
+  /customer/all:
+    post:
+      tags:
+       - Customer
+      summary: Pregled kupaca
+      operationId: allCustomer
+      description: Pretraga kupaca
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite parametre po kojima zelite da filtrirate kupce
+          required: true
+          schema:
+            type: object
+            properties:
+              legal_entity:
+                type: string
+                example: FIZICKO
+                enum:
+                    - "FIZICKO"
+                    - "PRAVNO"
+              name:
+                type: string
+                example: Marko Mutavdzic
+              email:
+                type: string
+                example: marko.mutavdzic@factoryww.com
+              telephone_number:
+                type: string
+                example: '0641470007'
+              pib_jmbg:
+                type: string
+                example: 1806983710075
+              place:
+                type: string
+                example: Beograd
+              street:
+                type: string
+                example: Belo Vrelo
+              num:
+                type: string
+                example: 54
+              date_of_first_visit_from:
+                type: string
+                example: '2021-11-01'
+              date_of_first_visit_to:
+                type: string
+                example: '2021-12-01'
+              page_num:
+                type: integer
+                example: 1
+      responses:
+        200:
+          description: Kupci
+          schema:
+            type: object
+            properties:
+              current page:
+                type: integer
+                example: 1
+              next_page:
+                type: integer
+                example: 2
+              perv_page:
+                type: integer
+                example:
+              kupci:
+                type: object
+                properties:
+                  legal_entity:
+                    type: string
+                    example: FIZICKO
+                  name:
+                    type: string
+                    example: Marko Mutavdzic
+                  email:
+                    type: string
+                    example: marko.mutavdzic@factoryww.com
+                  telephone_number:
+                    type: string
+                    example: '0641470007'
+                  pib_jmbg:
+                    type: string
+                    example: 1806983710075
+                  place:
+                    type: string
+                    example: Beograd
+                  street:
+                    type: string
+                    example: Belo Vrelo
+                  num:
+                    type: string
+                    example: 54
+                  date_of_first_visit:
+                    type: string
+                    example: '2021-11-01'
+  /customer/delete:
+    post:
+      tags:
+       - Customer
+      summary: Brisanje kupaca
+      operationId: deleteCustomer
+      description: Brisanje kupca po ID-u
+      produces:
+        - application/json
+      consumes:
+        - application/jsong
+      parameters:
+        - in: body
+          name: data
+          description: Unesite ID kupca kojeg zelite da obrisete
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+      responses:
+        200:
+          description:  "{'message': 'Customer deleted.'}"
+        400:
+          description: "{'message': 'Customer with that id doesnt exists.'}"
+
+
 
 
 securityDefinitions:

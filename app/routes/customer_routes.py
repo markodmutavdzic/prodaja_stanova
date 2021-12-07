@@ -26,7 +26,7 @@ def add_customer():
     if data.get('pib_jmbg'):
         customer_exists = Customer.query.filter(Customer.pib_jmbg == data.get('pib_jmbg')).first()
         if customer_exists:
-            return jsonify({'message': 'Customer with that pib_jmbg already exists'})
+            return jsonify({'message': 'Customer with that pib_jmbg already exists'}), 400
 
     new_customer = Customer()
     new_customer.legal_entity = data.get('legal_entity')
