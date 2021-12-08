@@ -15,7 +15,10 @@ tags:
   description: Rute za rad sa stanovima
 - name: Customer
   description: Rute za rad sa kupcima
-
+- name: Apartment Customer
+  description: Rute za rad sa ponudama i ugovorima
+- name: Reports
+  description: Izvestaji
 
 
 paths:
@@ -972,8 +975,1043 @@ paths:
         400:
           description: "{'message': 'Customer with that id doesnt exists.'}"
 
+  /apartment_customer/add:
+    post:
+      tags:
+       - Apartment Customer
+      summary: Dodavanje novih ponuda
+      operationId: addApartmentCustomer
+      description: Dodavanje novih ponuda
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Podatci o novoj ponudi
+          required: true
+          schema:
+            type: object
+            properties:
+              apartment_id:
+                type: integer
+                example: 1
+              customer_id:
+                type: integer
+                example: 1
+              customer_status:
+                type: string
+                example: POTECNCIJALNI
+                enum:
+                    - "POTECNCIJALNI"
+                    - "REZERVISAO"
+                    - "KUPIO"
+              customer_price:
+                type: number
+                example: 90000
+              note:
+                type: string
+                example: nesto
+              payment_method:
+                type: string
+                example: KES
+                enum:
+                    - "KES"
+                    - "KREDIT"
+                    - "MESOVITO"
+              deposit_amount:
+                type: number
+                example: 10000
+              contract_deadline:
+                type: string
+                example: '2021-12-20'
+              bank:
+                type: string
+                example: Intesa
+              loan_amount:
+                type: number
+                example: 800000
+              cash_amount:
+                type: number
+                example: 10000
+              contract_number:
+                type: string
+                example: 2021/123
+              contract_date:
+                type: string
+                example: '2021-12-15'
+      responses:
+        200:
+          description:  "{'message': 'New offer created'}\n
+                         {'Contract message': 'Contract with name Marko-Belo Vrelo-75kvm.docx created'}"
+        400:
+          description: "{'message': 'Offer from that costumer for that apartment already exists'}\n
+                        {'message': 'Apartment with that id doesnt exist'}\n
+                        {'message': 'Apartment is already sold'}\n
+                        {'message': 'Customer with that id doesnt exist'}\n
+                        {'Contract message': 'Price must be approved, status is set to POTENCIJALNI'}"
+
+  /apartment_customer/edit:
+    post:
+      tags:
+       - Apartment Customer
+      summary: Izmena podataka o ponudi
+      operationId: editApartmentCustomer
+      description: Izmena podataka o ponudi, morate biti ulogovani kao FINANSIJE
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite samo one podatke koje zelite da izmenite
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              apartment_id:
+                type: integer
+                example: 1
+              customer_id:
+                type: integer
+                example: 1
+              customer_status:
+                type: string
+                example: POTECNCIJALNI
+                enum:
+                    - "POTECNCIJALNI"
+                    - "REZERVISAO"
+                    - "KUPIO"
+              customer_price:
+                type: number
+                example: 90000
+              note:
+                type: string
+                example: nesto
+              payment_method:
+                type: string
+                example: KES
+                enum:
+                    - "KES"
+                    - "KREDIT"
+                    - "MESOVITO"
+              deposit_amount:
+                type: number
+                example: 10000
+              contract_deadline:
+                type: string
+                example: '2021-12-20'
+              bank:
+                type: string
+                example: Intesa
+              loan_amount:
+                type: number
+                example: 800000
+              cash_amount:
+                type: number
+                example: 10000
+              contract_number:
+                type: string
+                example: 2021/123
+              contract_date:
+                type: string
+                example: '2021-12-15'
+      responses:
+        200:
+          description:  "{'message':'Offer edited'}\n
+                         {'Contract message': 'Contract with name Marko-Belo Vrelo-75kvm.docx created'}"
+        400:
+          description: "{'message': 'User must be FINANSIJE'}\n
+                        {'message': 'Offer with that id doesnt exists'}\n
+                        {'message': 'Apartment with that id doesnt exist'}\n
+                        {'message': 'Apartment is already sold'}\n
+                        {'message': 'Customer with that id doesnt exist'}\n
+                        {'Contract message': 'Price must be approved, status is set to POTENCIJALNI'}"
+      security:
+        - JWT: []
+
+  /apartment_customer/edit_for_sale:
+    post:
+      tags:
+       - Apartment Customer
+      summary: Izmena podataka o ponudi od strane prodavaca
+      operationId: editApartmentCustomerForSale
+      description: Izmena podataka o ponudi od strane prodavaca, morate biti ulogovani kao PRODAVAC
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite samo one podatke koje zelite da izmenite
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              customer_status:
+                type: string
+                example: POTECNCIJALNI
+                enum:
+                    - "POTECNCIJALNI"
+                    - "REZERVISAO"
+                    - "KUPIO"
+              customer_price:
+                type: number
+                example: 90000
+              note:
+                type: string
+                example: nesto
+      responses:
+        200:
+          description:  "{'message':'Offer edited'}\n
+                         {'Contract message': 'Contract with name Marko-Belo Vrelo-75kvm.docx created'}"
+        400:
+          description: "{'message': 'User must be PRODAVAC '}\n
+                        {'message': 'Offer with that id doesnt exists'}\n
+                        {'message': 'Apartment with that id doesnt exist'}\n
+                        {'message': 'Apartment is already sold'}\n
+                        {'message': 'Customer with that id doesnt exist'}\n
+                        {'Contract message': 'Price must be approved, status is set to POTENCIJALNI'}"
+      security:
+        - JWT: []
+
+  /apartment_customer/edit_for_singed_contract:
+    post:
+      tags:
+       - Apartment Customer
+      summary: Izmena podataka o ponudi posle potpisivanja ugovora
+      operationId: editApartmentCustomerForSingedContract
+      description: Izmena podataka o ponudi posle potpisivanja ugovora, morate biti ulogovani kao FINANSIJE
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite samo one podatke koje zelite da izmenite
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              payment_method:
+                type: string
+                example: KES
+                enum:
+                    - "KES"
+                    - "KREDIT"
+                    - "MESOVITO"
+              deposit_amount:
+                type: number
+                example: 10000
+              contract_deadline:
+                type: string
+                example: '2021-12-20'
+              bank:
+                type: string
+                example: Intesa
+              loan_amount:
+                type: number
+                example: 800000
+              cash_amount:
+                type: number
+                example: 10000
+              contract_number:
+                type: string
+                example: 2021/123
+              contract_date:
+                type: string
+                example: '2021-12-15'
+      responses:
+        200:
+          description:  "{'message': 'Financial details updated'}"
+        400:
+          description: "{'message': 'User must be FINANSIJE'}\n
+                        {'message': 'Apartment must be sold'}"
+      security:
+        - JWT: []
+
+  /apartment_customer/customers_for_apartment:
+    post:
+      tags:
+       - Apartment Customer
+      summary: Prikazuje kupce koji suzainteresovani za odredjeni stan
+      operationId: ApartmentCustomerCustomerForApartment
+      description: Prikazuje kupce koji suzainteresovani za odredjeni stan, po ID-u stana
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite ID stana
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              page_num:
+                type: integer
+                example: 1
+      responses:
+        200:
+          description: Kupci
+          schema:
+            type: object
+            properties:
+              current page:
+                type: integer
+                example: 1
+              next_page:
+                type: integer
+                example: 2
+              perv_page:
+                type: integer
+                example:
+              apartment:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  lamella:
+                    type: string
+                    example: 4c
+                  address:
+                    type: string
+                    example: Belo Vrelo 54
+                  quadrature:
+                    type: number
+                    example: 75
+                  floor:
+                    type: integer
+                    example: 4
+                  num_rooms:
+                    type: number
+                    example: 4
+                  orientation:
+                    type: string
+                    example: SEVER
+                  num_terrace:
+                    type: integer
+                    example: 1
+                  price:
+                    type: number
+                    example: 100000
+                  status:
+                    type: string
+                    example: SLOBODAN
+                  new_construction:
+                    type: boolean
+                    example: false
+                  in_construction:
+                    type: boolean
+                    example: false
+                  available_from:
+                    type: string
+                    example: '2021-12-05'
+              customers_for_apartment:
+                type: object
+                properties:
+                  legal_entity:
+                    type: string
+                    example: FIZICKO
+                  name:
+                    type: string
+                    example: Marko Mutavdzic
+                  email:
+                    type: string
+                    example: marko.mutavdzic@factoryww.com
+                  telephone_number:
+                    type: string
+                    example: '0641470007'
+                  pib_jmbg:
+                    type: string
+                    example: 1806983710075
+                  place:
+                    type: string
+                    example: Beograd
+                  street:
+                    type: string
+                    example: Belo Vrelo
+                  num:
+                    type: string
+                    example: 54
+                  date_of_first_visit:
+                    type: string
+                    example: '2021-11-01'
+
+        400:
+          description: "{'message': 'Apartment with that id doesnt exist'}"
+
+  /apartment_customer/apartment_for_customer:
+    post:
+      tags:
+       - Apartment Customer
+      summary: Prikazuje stanove za koje je zainteresovan odredjeni kupac
+      operationId: ApartmentCustomerApatrmentsForCustomer
+      description: Prikazuje stanove za koje je zainteresovan odredjeni kupac, po ID-u kupca
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite ID kupca
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              page_num:
+                type: integer
+                example: 1
+      responses:
+        200:
+          description: Stanovi
+          schema:
+            type: object
+            properties:
+              current page:
+                type: integer
+                example: 1
+              next_page:
+                type: integer
+                example: 2
+              perv_page:
+                type: integer
+                example:
+              customer:
+                type: object
+                properties:
+                  legal_entity:
+                    type: string
+                    example: FIZICKO
+                  name:
+                    type: string
+                    example: Marko Mutavdzic
+                  email:
+                    type: string
+                    example: marko.mutavdzic@factoryww.com
+                  telephone_number:
+                    type: string
+                    example: '0641470007'
+                  pib_jmbg:
+                    type: string
+                    example: 1806983710075
+                  place:
+                    type: string
+                    example: Beograd
+                  street:
+                    type: string
+                    example: Belo Vrelo
+                  num:
+                    type: string
+                    example: 54
+                  date_of_first_visit:
+                    type: string
+                    example: '2021-11-01'
+              apartments:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  lamella:
+                    type: string
+                    example: 4c
+                  address:
+                    type: string
+                    example: Belo Vrelo 54
+                  quadrature:
+                    type: number
+                    example: 75
+                  floor:
+                    type: integer
+                    example: 4
+                  num_rooms:
+                    type: number
+                    example: 4
+                  orientation:
+                    type: string
+                    example: SEVER
+                  num_terrace:
+                    type: integer
+                    example: 1
+                  price:
+                    type: number
+                    example: 100000
+                  status:
+                    type: string
+                    example: SLOBODAN
+                  new_construction:
+                    type: boolean
+                    example: false
+                  in_construction:
+                    type: boolean
+                    example: false
+                  available_from:
+                    type: string
+                    example: '2021-12-05'
+        400:
+          description: "{'message': 'Cutomer with that id doesnt exist'}"
+
+  /apartment_customer/delete:
+    post:
+      tags:
+       - Apartment Customer
+      summary: Brisanje ponude
+      operationId: deleteApartmentCustomer
+      description: Brisanje ponuda, morate biti prijavljeni kao FINANSIJE
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite ID ponude
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+      responses:
+        200:
+          description: "{'message': 'Offer deleted'}"
+        400:
+          description: "{'message': 'User must be FINANSIJE'}\n
+                        {'message': 'Offer with that id doesnt exist'}"
+      security:
+        - JWT: []
+
+  /apartment_customer/price_for_approval:
+    post:
+      tags:
+       - Apartment Customer
+      summary: Prikaz ponuda za koje treba odobriti cene
+      operationId: ApartmentCustomerPriceForApproval
+      description: Prikaz ponuda za koje treba odobriti cene, morate biti prijavljeni kao FINANSIJE
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite broj stranice, ukoliko ostavite prazno bice prikazana prva stranica
+          required: false
+          schema:
+            type: object
+            properties:
+              page_num:
+                type: integer
+                example: 1
+      responses:
+        200:
+          description: Stanovi
+          schema:
+            type: object
+            properties:
+              current page:
+                type: integer
+                example: 1
+              next_page:
+                type: integer
+                example: 2
+              perv_page:
+                type: integer
+                example:
+              price_for_approval:
+                type: object
+                properties:
+                  apartment_customer_id:
+                    type: integer
+                    example: 1
+                  apartment_id:
+                    type: integer
+                    example: 1
+                  apartment_address:
+                    type: string
+                    example: Belo Vrelo 54
+                  apartment_quadrature:
+                    type: number
+                    example: 75
+                  apartment_price:
+                    type: number
+                    example: 100000
+                  apartment_lowest_price:
+                    type: number
+                    example: 95000
+                  apartment_customer_price:
+                    type: number
+                    example: 90000
+                  price_approved:
+                    type: boolean
+                    example: false
+                  customer_id:
+                    type: integer
+                    example: 1
+                  customer_name:
+                    type: string
+                    example: Marko Mutavdzic
+        400:
+          description: "{'message': 'User must be FINANSIJE'}"
+      security:
+        - JWT: []
+
+  /apartment_customer/price_approved:
+    post:
+      tags:
+       - Apartment Customer
+      summary: Odobravanje cene
+      operationId: ApartmentCustomerPriceApproval
+      description: Odobravanje cene, morate biti prijavljeni kao FINANSIJE
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite ID ponude i da li odobravate cenu
+          required: false
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              price_approved:
+                type: boolean
+                example: true
+      responses:
+        200:
+          description: "{'message': 'Price approved'}"
+        400:
+          description: "{'message': 'User must be FINANSIJE'}\n
+                        {'message': 'Offer with that id doesnt exists.'}"
+      security:
+        - JWT: []
+
+  /report/apartment_status:
+    post:
+      tags:
+       - Reports
+      summary: Izvestaji o statusima stanova
+      operationId: apartmentStatusReport
+      description: Izvestaji o statusima stanova
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite period, ukoliko ne unesete prikazuje trenutno stanje
+          required: false
+          schema:
+            type: object
+            properties:
+              date_from:
+                type: string
+                example: '2021-11-01'
+              date_to:
+                type: string
+                example: '2021-12-01'
+      responses:
+        200:
+          description: "{'slobodni': 3, 'rezervisani': 1, 'prodati': 2}"
+        400:
+          description: "{'message': 'Date from required'}"
+
+  /report/apartments_sold:
+    post:
+      tags:
+       - Reports
+      summary: Izvestaji o prodatim stanovima
+      operationId: apartmentSoldReport
+      description: Izvestaji o broju prodatih stanovima sa razlikom izmedju pocetne i prodajne cene
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite period, ukoliko ne unesete prikazuje trenutno stanje
+          required: false
+          schema:
+            type: object
+            properties:
+              date_from:
+                type: string
+                example: '2021-11-01'
+              date_to:
+                type: string
+                example: '2021-12-01'
+      responses:
+        200:
+          description: "{'aprtments_sold': 2,
+                        'price_difference': 100000}\n
+                        {'aprtments_sold': 'No apartments sold for that period'}"
+        400:
+          description: "{'message': 'Date from required'}"
+
+  /report/apartment_for_customer:
+    post:
+      tags:
+       - Reports
+      summary: Izvestaji o stanovima za koje je zainteresova odredjeni kupac
+      operationId: apartmentFoRCustomerReport
+      description: Izvestaji o stanovima za koje je zainteresova odredjeni kupac
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite ID kupca
+          required: false
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              page_num:
+                type: integer
+                example: 1
+      responses:
+        200:
+          description: Stanovi
+          schema:
+            type: object
+            properties:
+              current page:
+                type: integer
+                example: 1
+              next_page:
+                type: integer
+                example: 2
+              perv_page:
+                type: integer
+                example:
+              customer:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  legal_entity:
+                    type: string
+                    example: FIZICKO
+                  name:
+                    type: string
+                    example: Marko Mutavdzic
+                  email:
+                    type: string
+                    example: marko.mutavdzic@factoryww.com
+                  telephone_number:
+                    type: string
+                    example: '0641470007'
+                  pib_jmbg:
+                    type: string
+                    example: 1806983710075
+                  place:
+                    type: string
+                    example: Beograd
+                  street:
+                    type: string
+                    example: Belo Vrelo
+                  num:
+                    type: string
+                    example: 54
+                  date_of_first_visit:
+                    type: string
+                    example: '2021-11-01'
+              apartments_for_customer:
+                type: object
+                properties:
+                  address:
+                    type: string
+                    example: Belo Vrelo 54
+                  apartment_id:
+                    type: integer
+                    example: 1
+                  available_from:
+                    type: string
+                    example: '2021-12-20'
+                  bank:
+                    type: string
+                    example: Intesa
+                  cash_amount:
+                    type: integer
+                    example:
+                  contract_date:
+                    type: string
+                    example: '2021-12-15'
+                  contract_deadline:
+                    type: string
+                    example: '2021-12-20'
+                  contract_number:
+                    type: string
+                    example: 2021/123
+                  customer_id:
+                    type: integer
+                    example: 1
+                  customer_price:
+                    type: integer
+                    example: 90000
+                  customer_status:
+                    type: string
+                    example: POTECNCIJALNI
+                  deposit_amount:
+                    type: integer
+                    example:
+                  floor:
+                    type: integer
+                    example: 4
+                  id:
+                    type: integer
+                    example: 1
+                  images:
+                    type: string
+                    example:
+                  in_construction:
+                    type: boolean
+                    example: false
+                  lamella:
+                    type: string
+                    example: 4c
+                  loan_amount:
+                    type: integer
+                    example:
+                  new_construction:
+                    type: boolean
+                    example: false
+                  note:
+                    type: string
+                    example: nesto
+                  num_rooms:
+                    type: string
+                    example: 4
+                  num_terrace:
+                    type: integer
+                    example: 1
+                  orientation:
+                    type: string
+                    example: ISTOK
+                  payment_method:
+                    type: string
+                    example:
+                  price:
+                    type: string
+                    example: 100000
+                  price_approved:
+                    type: boolean
+                    example:
+                  quadrature:
+                    type: string
+                    example: 75
+                  status:
+                    type: string
+                    example: SLOBODAN
 
 
+        400:
+          description: "{'message': 'Customer with that id doesnt exists.'}"
+
+  /report/apartments_customer_bought:
+    post:
+      tags:
+       - Reports
+      summary: Izvestaji o stanovima za koje je kupio odredjeni kupac
+      operationId: apartmentCustomerBouthReport
+      description: Izvestaji o stanovima za koje je kupio odredjeni kupac
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: data
+          description: Unesite ID kupca
+          required: false
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              page_num:
+                type: integer
+                example: 1
+              date_from:
+                type: string
+                example: '2021-11-01'
+              date_to:
+                type: string
+                example: '2021-12-01'
+      responses:
+        200:
+          description: Stanovi
+          schema:
+            type: object
+            properties:
+              current page:
+                type: integer
+                example: 1
+              next_page:
+                type: integer
+                example: 2
+              perv_page:
+                type: integer
+                example:
+              customer:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  legal_entity:
+                    type: string
+                    example: FIZICKO
+                  name:
+                    type: string
+                    example: Marko Mutavdzic
+                  email:
+                    type: string
+                    example: marko.mutavdzic@factoryww.com
+                  telephone_number:
+                    type: string
+                    example: '0641470007'
+                  pib_jmbg:
+                    type: string
+                    example: 1806983710075
+                  place:
+                    type: string
+                    example: Beograd
+                  street:
+                    type: string
+                    example: Belo Vrelo
+                  num:
+                    type: string
+                    example: 54
+                  date_of_first_visit:
+                    type: string
+                    example: '2021-11-01'
+              apartments_customer_bought:
+                type: object
+                properties:
+                  address:
+                    type: string
+                    example: Belo Vrelo 54
+                  apartment_id:
+                    type: integer
+                    example: 1
+                  available_from:
+                    type: string
+                    example: '2021-12-20'
+                  bank:
+                    type: string
+                    example: Intesa
+                  cash_amount:
+                    type: integer
+                    example:
+                  contract_date:
+                    type: string
+                    example: '2021-12-15'
+                  contract_deadline:
+                    type: string
+                    example: '2021-12-20'
+                  contract_number:
+                    type: string
+                    example: 2021/123
+                  customer_id:
+                    type: integer
+                    example: 1
+                  customer_price:
+                    type: integer
+                    example: 90000
+                  customer_status:
+                    type: string
+                    example: POTECNCIJALNI
+                  deposit_amount:
+                    type: integer
+                    example:
+                  floor:
+                    type: integer
+                    example: 4
+                  id:
+                    type: integer
+                    example: 1
+                  images:
+                    type: string
+                    example:
+                  in_construction:
+                    type: boolean
+                    example: false
+                  lamella:
+                    type: string
+                    example: 4c
+                  loan_amount:
+                    type: integer
+                    example:
+                  new_construction:
+                    type: boolean
+                    example: false
+                  note:
+                    type: string
+                    example: nesto
+                  num_rooms:
+                    type: string
+                    example: 4
+                  num_terrace:
+                    type: integer
+                    example: 1
+                  orientation:
+                    type: string
+                    example: ISTOK
+                  payment_method:
+                    type: string
+                    example:
+                  price:
+                    type: string
+                    example: 100000
+                  price_approved:
+                    type: boolean
+                    example:
+                  quadrature:
+                    type: string
+                    example: 75
+                  status:
+                    type: string
+                    example: SLOBODAN
+        400:
+          description: "{'message': 'Date from required'}\n
+                        {'message': 'Customer with that id doesnt exists.'}"
 
 securityDefinitions:
   JWT:

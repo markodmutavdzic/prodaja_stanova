@@ -325,7 +325,7 @@ def delete_apartment_customer(current_user):
     return jsonify({'message': 'Offer deleted'}), 200
 
 
-@apc.route('/price_for_approval')
+@apc.route('/price_for_approval', methods=['POST'])
 @token_required
 # def price_for_approval():
 def price_for_approval(current_user):
